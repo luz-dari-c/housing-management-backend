@@ -1,3 +1,36 @@
 spring:
   application:
     name: housing
+
+  datasource:
+    url: jdbc:postgresql://ep-soft-breeze-aicyu3ti-pooler.c-4.us-east-1.aws.neon.tech:5432/neondb
+    username: neondb_owner
+    password: npg_LUdo0XrRWbI7
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+    properties:
+      sslmode: require
+      channelBinding: require
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  sql:
+    init:
+      mode: always
+
+  server:
+    port: 8080
+
+  logging:
+    level:
+      root: INFO
+      org.hibernate.SQL: DEBUG
+      org.hibernate.type.descriptor.sql.BasicBinder: TRACE
