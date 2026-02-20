@@ -2,7 +2,7 @@ package com.backend.housing.infrastructure.adapters.out.persistence.jpa;
 
 
 import com.backend.housing.domain.entity.Vivienda;
-import com.backend.housing.domain.port.out.ViviendaRepositoryPort;
+import com.backend.housing.domain.ports.out.ViviendaRepositoryPort;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

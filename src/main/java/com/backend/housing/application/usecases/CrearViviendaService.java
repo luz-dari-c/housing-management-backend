@@ -1,4 +1,4 @@
-package com.backend.housing.application.usescase;
+package com.backend.housing.application.usecases;
 
 import java.math.BigDecimal;
 
@@ -7,8 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.backend.housing.domain.entity.TipoDeVivienda;
 import com.backend.housing.domain.entity.Vivienda;
-import com.backend.housing.domain.port.in.CrearViviendaCase;
-import com.backend.housing.domain.port.out.ViviendaRepositoryPort;
+import com.backend.housing.domain.ports.out.ViviendaRepositoryPort;
 
 @Service
 public class CrearViviendaService implements CrearViviendaCase {

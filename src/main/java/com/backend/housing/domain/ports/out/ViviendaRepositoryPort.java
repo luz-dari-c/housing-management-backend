@@ -1,4 +1,4 @@
-package com.backend.housing.domain.port.out;
+package com.backend.housing.domain.ports.out;
 
 import com.backend.housing.domain.entity.Vivienda;
 

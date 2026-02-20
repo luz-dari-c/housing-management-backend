@@ -3,7 +3,6 @@ package com.backend.housing.infrastructure.adapters.in.web;
 
 import com.backend.housing.application.dto.request.ViviendaCrearRequest;
 import com.backend.housing.domain.entity.Vivienda;
-import com.backend.housing.domain.port.in.CrearViviendaCase;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
