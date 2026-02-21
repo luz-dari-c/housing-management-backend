@@ -6,5 +6,5 @@ import com.backend.housing.domain.entity.properties.Property;
 
 public interface CreatePropertyUseCase {
 
-    Property createProperty( CreatePropertyCommand command);
+    Property createProperty( Property property);
 }

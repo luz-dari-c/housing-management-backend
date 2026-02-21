@@ -9,5 +9,4 @@ public interface PublishPropertyUseCase {
     Property publish(PropertyId id);
 
 
-
 }

@@ -1,4 +1,4 @@
-package com.backend.housing.infrastructure.adapters.config;
+package com.backend.housing.infrastructure.config;
 /*
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
