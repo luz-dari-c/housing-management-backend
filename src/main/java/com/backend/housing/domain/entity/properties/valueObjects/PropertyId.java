@@ -3,21 +3,22 @@ package com.backend.housing.domain.entity.properties.valueObjects;
 import java.util.Objects;
 
 public class PropertyId {
-
     private final Long value;
 
     private PropertyId(Long value) {
-        if (value == null) {
-            throw new IllegalArgumentException("PropertyId no puede ser null");
-        }
-        if (value <= 0) {
-            throw new IllegalArgumentException("PropertyId debe ser positivo");
+        if (value == null || value <= 0) {
+            throw new IllegalArgumentException("Property ID must be a positive number");
         }
         this.value = value;
     }
 
     public static PropertyId of(Long value) {
         return new PropertyId(value);
+    }
+
+    public static PropertyId generate() {
+
+        return new PropertyId(System.nanoTime());
     }
 
     public Long getValue() {
@@ -39,6 +40,6 @@ public class PropertyId {
 
     @Override
     public String toString() {
-        return "PropertyId{" + "value=" + value + '}';
+        return String.valueOf(value);
     }
 }

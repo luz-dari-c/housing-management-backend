@@ -4,5 +4,6 @@ public enum PropertyStatus {
     PUBLISHED,
     RENTED,
     SOLD,
-    CREATED
+    CREATED,
+    DRAFT
 }

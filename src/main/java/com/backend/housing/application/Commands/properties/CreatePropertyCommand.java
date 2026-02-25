@@ -60,7 +60,7 @@ public class CreatePropertyCommand {
 
         this.initialStatus = initialStatus != null
                 ? initialStatus
-                : PropertyStatus.CREATED;
+                : PropertyStatus.DRAFT;
 
         this.ownerId = ownerId;
         this.title = title;
