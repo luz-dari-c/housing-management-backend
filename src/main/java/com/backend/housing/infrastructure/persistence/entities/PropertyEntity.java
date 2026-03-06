@@ -4,6 +4,8 @@ package com.backend.housing.infrastructure.persistence.entities;
 import com.backend.housing.domain.entity.properties.Modality;
 import com.backend.housing.domain.entity.properties.PropertyStatus;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -11,6 +13,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Getter
+@Setter
 @Entity
 @Table(name = "properties")
 public class PropertyEntity {

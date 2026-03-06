@@ -5,7 +5,7 @@ import java.util.Objects;
 public class PropertyId {
     private final Long value;
 
-    private PropertyId(Long value) {
+    public PropertyId(Long value) {
         if (value == null || value <= 0) {
             throw new IllegalArgumentException("Property ID must be a positive number");
         }

@@ -7,6 +7,10 @@ public class Coordinates {
     private BigDecimal latitud;
     private BigDecimal longitud;
 
+    public Coordinates(BigDecimal longitud, BigDecimal latitud) {
+        this.longitud = longitud;
+        this.latitud = latitud;
+    }
 
     public BigDecimal getLongitud() {
         return longitud;

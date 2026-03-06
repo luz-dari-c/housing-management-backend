@@ -8,6 +8,14 @@ public class Address {
     private String country;
     private String postalCode;
 
+    public Address(String street, String state, String city, String country, String postalCode) {
+        this.street = street;
+        this.state = state;
+        this.city = city;
+        this.country = country;
+        this.postalCode = postalCode;
+    }
+
     public String getStreet() {
         return street;
     }

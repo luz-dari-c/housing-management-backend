@@ -2,9 +2,13 @@ package com.backend.housing.infrastructure.persistence.entities;
 
 
 import jakarta.persistence.Embeddable;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
+@Setter
+@Getter
 @Embeddable
 public class CoordinatesEmbeddable {
 
