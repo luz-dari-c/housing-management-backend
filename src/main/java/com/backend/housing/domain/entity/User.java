@@ -30,44 +30,113 @@ public class User {
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-        name = "user_roles",
-        joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id")
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
 
-    public User() {}
+    public User() {
+    }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getPrimerNombre() { return primerNombre; }
-    public void setPrimerNombre(String primerNombre) { this.primerNombre = primerNombre; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getSegundoNombre() { return segundoNombre; }
-    public void setSegundoNombre(String segundoNombre) { this.segundoNombre = segundoNombre; }
+    public String getPrimerNombre() {
+        return primerNombre;
+    }
 
-    public String getPrimerApellido() { return primerApellido; }
-    public void setPrimerApellido(String primerApellido) { this.primerApellido = primerApellido; }
+    public void setPrimerNombre(String primerNombre) {
+        this.primerNombre = primerNombre;
+    }
 
-    public String getSegundoApellido() { return segundoApellido; }
-    public void setSegundoApellido(String segundoApellido) { this.segundoApellido = segundoApellido; }
+    public String getSegundoNombre() {
+        return segundoNombre;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public void setSegundoNombre(String segundoNombre) {
+        this.segundoNombre = segundoNombre;
+    }
 
-    public String getCedula() { return cedula; }
-    public void setCedula(String cedula) { this.cedula = cedula; }
+    public String getPrimerApellido() {
+        return primerApellido;
+    }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public void setPrimerApellido(String primerApellido) {
+        this.primerApellido = primerApellido;
+    }
 
-    public boolean isActive() { return active; }
-    public void setActive(boolean active) { this.active = active; }
+    public String getSegundoApellido() {
+        return segundoApellido;
+    }
 
-    public int getEdad() { return edad; }
-    public void setEdad(int edad) { this.edad = edad; }
+    public void setSegundoApellido(String segundoApellido) {
+        this.segundoApellido = segundoApellido;
+    }
 
-    public Set<Role> getRoles() { return roles; }
-    public void setRoles(Set<Role> roles) { this.roles = roles; }
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getCedula() {
+        return cedula;
+    }
+
+    public void setCedula(String cedula) {
+        this.cedula = cedula;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+    public int getEdad() {
+        return edad;
+    }
+
+    public void setEdad(int edad) {
+        this.edad = edad;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
+    // Dentro de User.java
+    public void setName(String fullName) {
+        if (fullName == null || fullName.isBlank()) {
+            return;
+        }
+
+        String[] parts = fullName.split(" ");
+        this.primerNombre = parts[0];
+        if (parts.length > 1) {
+            this.primerApellido = parts[parts.length - 1]; // El último como apellido
+        }
+    }
 }
