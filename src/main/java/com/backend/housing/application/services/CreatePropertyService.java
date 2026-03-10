@@ -19,20 +19,20 @@ import java.util.List;
 @Service
 public class CreatePropertyService  implements CreatePropertyUseCase{
 
-private final UserServicePort userServicePort;
+// private final UserServicePort userServicePort;
 private final PropertyRepository propertyRepository;
 
-    public  CreatePropertyService(PropertyRepository propertyRepository, UserServicePort userServicePort){
+    public  CreatePropertyService(PropertyRepository propertyRepository  /*UserServicePort userServicePort*/){
         this.propertyRepository = propertyRepository;
-        this.userServicePort = userServicePort;
+ //       this.userServicePort = userServicePort;
 
     }
 
     public Property createProperty(CreatePropertyCommand command){
 
-        if (!userServicePort.userExists(command.getOwnerId())) {
-            throw new UserNotFoundException("User not found");
-        }
+    //    if (!userServicePort.userExists(command.getOwnerId())) {
+     //       throw new UserNotFoundException("User not found");
+     //   }
 
 
         PropertyId id = PropertyId.generate();

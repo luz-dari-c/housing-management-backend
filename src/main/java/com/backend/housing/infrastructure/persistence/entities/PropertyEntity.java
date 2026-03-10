@@ -20,7 +20,6 @@ import java.util.List;
 public class PropertyEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long propertyId;
 
     @Column(nullable = false)

@@ -1,5 +1,7 @@
 package com.backend.housing.domain.entity.properties.valueObjects;
 
+import com.backend.housing.domain.exceptions.InvalidAddressException;
+
 public class Address {
 
     private String street;
@@ -9,6 +11,27 @@ public class Address {
     private String postalCode;
 
     public Address(String street, String state, String city, String country, String postalCode) {
+
+        if (postalCode == null || postalCode.isBlank()){
+           throw new InvalidAddressException("Postal code cannot be null");
+        }
+
+        if (street == null || street.isBlank()){
+            throw new InvalidAddressException("Street cannot be null");
+        }
+
+        if (city == null || city.isBlank()){
+            throw new InvalidAddressException("City cannot be null");
+        }
+
+        if (country == null || country.isBlank()){
+            throw new InvalidAddressException("Country cannot be null");
+        }
+
+        if (state == null || state.isBlank()){
+            throw new InvalidAddressException("State cannot be null");
+        }
+
         this.street = street;
         this.state = state;
         this.city = city;
