@@ -2,42 +2,61 @@ package com.backend.housing.application.dto.auth;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 public class RegisterRequest {
-@NotBlank
-private String name;
+    
+    @NotBlank(message = "El primer nombre es obligatorio")
+    private String primerNombre;
 
-@Email
-@NotBlank
-private String email;
+    @NotBlank(message = "El segundo nombre es obligatorio") 
+    private String segundoNombre;
 
-@Size(min = 6)
-private String password;
+    @NotBlank(message = "El primer apellido es obligatorio")
+    private String primerApellido;
 
-public String getName() {
-    return name;
-}
+    @NotBlank(message = "El segundo apellido es obligatorio")
+    private String segundoApellido;
 
-public void setName(String name) {
-    this.name = name;
-}
+    @Email(message = "Email inválido")
+    @NotBlank(message = "El email es obligatorio")
+    private String email;
 
-public String getEmail() {
-    return email;
-}
+    @NotBlank(message = "La cédula es obligatoria")
+    @Size(min = 5, max = 20, message = "La cédula debe tener entre 5 y 20 caracteres")
+    private String cedula;
 
-public void setEmail(String email) {
-    this.email = email;
-}
+    @NotNull(message = "La edad es obligatoria")
+    @Positive(message = "La edad debe ser un número positivo")
+    private Integer edad;
 
-public String getPassword() {
-    return password;
-}
+    @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
+    private String password;
 
-public void setPassword(String password) {
-    this.password = password;
-}
+   
+    public String getPrimerNombre() { return primerNombre; }
+    public void setPrimerNombre(String primerNombre) { this.primerNombre = primerNombre; }
 
+    public String getSegundoNombre() { return segundoNombre; }
+    public void setSegundoNombre(String segundoNombre) { this.segundoNombre = segundoNombre; }
 
+    public String getPrimerApellido() { return primerApellido; }
+    public void setPrimerApellido(String primerApellido) { this.primerApellido = primerApellido; }
+
+    public String getSegundoApellido() { return segundoApellido; }
+    public void setSegundoApellido(String segundoApellido) { this.segundoApellido = segundoApellido; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getCedula() { return cedula; }
+    public void setCedula(String cedula) { this.cedula = cedula; }
+
+    public Integer getEdad() { return edad; }
+    public void setEdad(Integer edad) { this.edad = edad; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 }

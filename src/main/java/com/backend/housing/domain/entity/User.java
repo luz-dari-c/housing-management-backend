@@ -12,20 +12,27 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = false, nullable = false)
     private String primerNombre;
+    @Column(unique = false, nullable = false)
     private String segundoNombre;
+    @Column(unique = false, nullable = false)
     private String primerApellido;
+    @Column(unique = false, nullable = false)
     private String segundoApellido;
 
     @Column(unique = true, nullable = false)
     private String email;
 
+    @Column(nullable = false, unique = true)
     private String cedula;
 
     @Column(nullable = false)
     private String password;
 
     private boolean active;
+
+    @Column(nullable = false)
     private int edad;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -127,7 +134,6 @@ public class User {
         this.roles = roles;
     }
 
-    // Dentro de User.java
     public void setName(String fullName) {
         if (fullName == null || fullName.isBlank()) {
             return;
@@ -136,7 +142,7 @@ public class User {
         String[] parts = fullName.split(" ");
         this.primerNombre = parts[0];
         if (parts.length > 1) {
-            this.primerApellido = parts[parts.length - 1]; // El último como apellido
+            this.primerApellido = parts[parts.length - 1];
         }
     }
 }
