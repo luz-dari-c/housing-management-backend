@@ -1,5 +1,4 @@
 
-
 package com.backend.housing.application.services.auth;
 
 import java.util.Set;
@@ -35,16 +34,19 @@ public class RegisterUserService implements RegisterUserUseCase {
             throw new RuntimeException("El email ya está registrado");
         });
 
-       
+      
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        Role rolTenant = roleRepositoryPort.findByName("TENANT")
-            .orElseThrow(() -> new RuntimeException("Error de configuración: Rol TENANT no encontrado en la base de datos."));
-
-        user.setRoles(Set.of(rolTenant));
        
+        Role userRole = roleRepositoryPort.findByName("USER")
+            .orElseThrow(() -> new RuntimeException("Error: Rol USER no encontrado en la base de datos."));
+
+        user.setRoles(Set.of(userRole));
+        
+        
         user.setActive(true);
 
+        
         return userRepositoryPort.save(user);
     }
 
