@@ -4,7 +4,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 import com.backend.housing.domain.entity.Role;
 import com.backend.housing.domain.ports.out.RoleRepositoryPort;
-import com.backend.housing.infrastructure.adapters.out.SpringDataRoleRepository;
+
 
 @Repository
 public class RoleRepositoryAdapter implements RoleRepositoryPort {

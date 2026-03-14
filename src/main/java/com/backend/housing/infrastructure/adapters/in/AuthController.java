@@ -2,16 +2,17 @@ package com.backend.housing.infrastructure.adapters.in;
 
 
 
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.backend.housing.application.dto.auth.*;
-import com.backend.housing.domain.ports.in.properties.LoginUseCase;
-// Cambia estas líneas:
-import com.backend.housing.domain.ports.in.properties.RegisterUserUseCase; // Agregado .properties
-// Si no tienes una carpeta 'auth', el Login debe estar en properties o en la raíz de in
-
-
+import com.backend.housing.application.dto.auth.AuthResponse;
+import com.backend.housing.application.dto.auth.LoginRequest;
+import com.backend.housing.application.dto.auth.RegisterRequest;
 import com.backend.housing.domain.entity.User;
+import com.backend.housing.domain.ports.in.properties.LoginUseCase;
+import com.backend.housing.domain.ports.in.properties.RegisterUserUseCase;
 
 import jakarta.validation.Valid;
 

@@ -1,4 +1,4 @@
-package com.backend.housing.application.services;
+package com.backend.housing.application.services.auth;
 
 
 import com.backend.housing.domain.entity.properties.Property;

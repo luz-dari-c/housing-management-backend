@@ -18,6 +18,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String[] args) throws Exception {
 
+        //debugg
         System.out.println("===== INITIALIZING ROLES =====");
 
         createRoleIfNotExist("ADMIN");

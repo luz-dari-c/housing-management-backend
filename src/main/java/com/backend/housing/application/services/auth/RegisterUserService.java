@@ -1,4 +1,6 @@
-package com.backend.housing.application.services;
+
+
+package com.backend.housing.application.services.auth;
 
 import java.util.Set;
 
@@ -7,19 +9,17 @@ import org.springframework.stereotype.Service;
 
 import com.backend.housing.domain.entity.Role;
 import com.backend.housing.domain.entity.User;
-import com.backend.housing.domain.ports.in.properties.*;
-import com.backend.housing.domain.ports.out.UserRepositoryPort;
+import com.backend.housing.domain.ports.in.properties.RegisterUserUseCase;
 import com.backend.housing.domain.ports.out.RoleRepositoryPort;
-
+import com.backend.housing.domain.ports.out.UserRepositoryPort;
 
 @Service
 public class RegisterUserService implements RegisterUserUseCase {
     
     private final UserRepositoryPort userRepositoryPort;
     private final RoleRepositoryPort roleRepositoryPort;
-    private final PasswordEncoder passwordEncoder; // 1. Agrega esta línea
+    private final PasswordEncoder passwordEncoder;
 
-    // 2. Agrégalo aquí al constructor
     public RegisterUserService(UserRepositoryPort userRepositoryPort, 
                                RoleRepositoryPort roleRepositoryPort,
                                PasswordEncoder passwordEncoder) { 
@@ -30,18 +30,20 @@ public class RegisterUserService implements RegisterUserUseCase {
 
     @Override
     public User register(User user) {
+       
         userRepositoryPort.findByEmail(user.getEmail()).ifPresent(u -> {
-            throw new RuntimeException("Email already exist");
+            throw new RuntimeException("El email ya está registrado");
         });
 
-        // 3. ¡MUY IMPORTANTE! Encripta la contraseña antes de guardar
+       
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        // Ojo: En tu base de datos (Neon) el rol dice "TENANT" (mayúsculas)
         Role rolTenant = roleRepositoryPort.findByName("TENANT")
-            .orElseThrow(() -> new RuntimeException("Role TENANT NOT FOUND"));
+            .orElseThrow(() -> new RuntimeException("Error de configuración: Rol TENANT no encontrado en la base de datos."));
 
         user.setRoles(Set.of(rolTenant));
+       
+        user.setActive(true);
 
         return userRepositoryPort.save(user);
     }

@@ -1,8 +1,11 @@
 package com.backend.housing.infrastructure.security;
 
 import java.util.Date;
+
 import javax.crypto.SecretKey; // IMPORTANTE: Usar SecretKey
+
 import org.springframework.stereotype.Service;
+
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 
@@ -11,7 +14,7 @@ public class JwtService {
     
     private final String SECRET = "ESTA_ES_UNA_LLAVE_MUY_SECRET_Y_LARGA_DE_32_CHARS";
 
-    private SecretKey getSingKey() { // Cambiado de Key a SecretKey
+    private SecretKey getSingKey() { 
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 

@@ -1,10 +1,10 @@
 package com.backend.housing.domain.ports.out;
 
 
+import java.util.Optional;
+
 import com.backend.housing.domain.entity.properties.Property;
 import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
-
-import java.util.Optional;
 
 public interface PropertyRepository {
 
