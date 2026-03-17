@@ -4,9 +4,9 @@ import com.backend.housing.domain.entity.properties.Property;
 import com.backend.housing.domain.entity.properties.valueObjects.Address;
 import com.backend.housing.domain.entity.properties.valueObjects.Coordinates;
 import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
-import com.backend.housing.infrastructure.persistence.entities.AddressEmbeddable;
-import com.backend.housing.infrastructure.persistence.entities.CoordinatesEmbeddable;
-import com.backend.housing.infrastructure.persistence.entities.PropertyEntity;
+import com.backend.housing.infrastructure.persistence.entities.properties.AddressEmbeddable;
+import com.backend.housing.infrastructure.persistence.entities.properties.CoordinatesEmbeddable;
+import com.backend.housing.infrastructure.persistence.entities.properties.PropertyEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -27,7 +27,7 @@ public class PropertyEntityMapper {
         entity.setCoordinates(mapToEmbeddable(domain.getCoordinates()));
         entity.setSalePrice(domain.getSalePrice());
         entity.setRentPrice(domain.getRentPrice());
-        entity.setModality(domain.getModality());
+        entity.setTypeProperty(domain.getTypeProperty());
         entity.setPropertyStatus(domain.getStatus());
         entity.setOwnerId(domain.getOwnerId());
         entity.setCreatedAt(domain.getCreatedAt());
@@ -54,7 +54,7 @@ public class PropertyEntityMapper {
                 mapToCoordinates(entity.getCoordinates()),
                 entity.getSalePrice(),
                 entity.getRentPrice(),
-                entity.getModality(),
+                entity.getTypeProperty(),
                 entity.getPropertyStatus(),
                 entity.getOwnerId(),
                 entity.getCreatedAt(),
@@ -66,7 +66,8 @@ public class PropertyEntityMapper {
                 entity.getAreaInSquareMeters(),
                 entity.isPetsAllowed(),
                 mapToAddress(entity.getAddress()),
-                entity.isFurnished()
+                entity.isFurnished(),
+                entity.getRentType()
         );
     }
 

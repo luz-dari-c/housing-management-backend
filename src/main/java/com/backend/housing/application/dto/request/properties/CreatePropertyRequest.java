@@ -1,8 +1,7 @@
 package com.backend.housing.application.dto.request.properties;
 
-import com.backend.housing.domain.entity.properties.Modality;
-import com.backend.housing.domain.entity.properties.valueObjects.Address;
-import com.backend.housing.domain.entity.properties.valueObjects.Coordinates;
+import com.backend.housing.domain.entity.properties.RentType;
+import com.backend.housing.domain.entity.properties.TypeProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
@@ -38,7 +37,7 @@ public class CreatePropertyRequest {
     private BigDecimal rentPrice;
 
     @NotNull(message = "Modality is required")
-    private Modality modality;
+    private TypeProperty typeProperty;
 
     private List<String> imageUrls;
 
@@ -54,5 +53,7 @@ public class CreatePropertyRequest {
     private boolean petsAllowed;
 
     private boolean furnished;
+
+    private RentType rentType;
 
 }

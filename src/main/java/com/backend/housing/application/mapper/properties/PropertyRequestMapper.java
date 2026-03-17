@@ -1,4 +1,4 @@
-package com.backend.housing.application.mappers.properties;
+package com.backend.housing.application.mapper.properties;
 
 import com.backend.housing.application.Commands.properties.CreatePropertyCommand;
 import com.backend.housing.application.dto.request.properties.AddressRequest;
@@ -44,7 +44,7 @@ public class PropertyRequestMapper {
                 coordinates,
                 request.getSalePrice(),
                 request.getRentPrice(),
-                request.getModality(),
+                request.getTypeProperty(),
                 null,
                 request.getImageUrls(),
                 request.getNumberOfBedrooms(),
@@ -52,7 +52,8 @@ public class PropertyRequestMapper {
                 request.getAreaInSquareMeters(),
                 request.isPetsAllowed(),
                 address,
-                request.isFurnished()
+                request.isFurnished(),
+                request.getRentType()
         );
     }
 }

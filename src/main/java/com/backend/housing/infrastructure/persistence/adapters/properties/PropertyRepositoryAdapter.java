@@ -1,17 +1,18 @@
-package com.backend.housing.infrastructure.persistence.adapters;
+package com.backend.housing.infrastructure.persistence.adapters.properties;
 
 
 import com.backend.housing.domain.entity.properties.Property;
 import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 import com.backend.housing.domain.ports.out.PropertyRepository;
-import com.backend.housing.infrastructure.persistence.entities.PropertyEntity;
+import com.backend.housing.domain.valueObjects.Pagination;
+import com.backend.housing.infrastructure.persistence.entities.properties.PropertyEntity;
 import com.backend.housing.infrastructure.persistence.mappers.PropertyEntityMapper;
-import com.backend.housing.infrastructure.persistence.repositories.JpaPropertyRepository;
-import jakarta.persistence.Id;
+import com.backend.housing.infrastructure.persistence.repositories.properties.JpaPropertyRepository;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -56,5 +57,20 @@ public class PropertyRepositoryAdapter  implements PropertyRepository {
         return optionalEntity.map(mapper::toDomain);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<Property> findAll(Pagination pagination) {
+
+        Pageable pageable = PageRequest.of(
+                pagination.getPage(),
+                pagination.getSize()
+        );
+
+        return jpaPropertyRepository
+                .findAll(pageable)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
 
 }

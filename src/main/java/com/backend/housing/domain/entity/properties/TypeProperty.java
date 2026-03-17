@@ -1,8 +1,8 @@
 package com.backend.housing.domain.entity.properties;
 
 
-public enum Modality {
+public enum TypeProperty {
     HOUSE,
-    APARTMENT,
-    ROOM
+    APARTMENT
+
 }

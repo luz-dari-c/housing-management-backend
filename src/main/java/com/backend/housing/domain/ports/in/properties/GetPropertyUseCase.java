@@ -12,4 +12,5 @@ public interface GetPropertyUseCase {
     Property getProperty(PropertyId id, UUID requestingUserId);
 
 
+
 }

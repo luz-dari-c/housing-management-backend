@@ -18,7 +18,7 @@ public class Property {
     private Coordinates coordinates;
     private BigDecimal salePrice;
     private BigDecimal rentPrice;
-    private Modality modality;
+    private TypeProperty typeProperty;
     private PropertyStatus status;
     private final Long ownerId;
     private final LocalDateTime createdAt;
@@ -31,28 +31,29 @@ public class Property {
     private boolean petsAllowed;
     private boolean furnished;
     private Address address;
+    private RentType rentType;
 
     public Property(PropertyId id, String title, String description,
                     Coordinates coordinates, BigDecimal salePrice,
-                    BigDecimal rentPrice, Modality modality, PropertyStatus status,
+                    BigDecimal rentPrice, TypeProperty typeProperty, PropertyStatus status,
                     Long ownerId, LocalDateTime createdAt, LocalDateTime updatedAt,
                     LocalDateTime publishedAt, List<String> imageUrls,
                     Integer numberOfBedrooms, Integer numberOfBathrooms,
                     Integer areaInSquareMeters, boolean petsAllowed,
-                    Address address, boolean furnished) {
+                    Address address, boolean furnished, RentType rentType) {
 
         this.id = Objects.requireNonNull(id, "Property ID cannot be null");
         this.title = validateTitle(title);
         this.description = description;
         this.coordinates = coordinates;
-        this.modality = Objects.requireNonNull(modality, "Modality cannot be null");
+        this.typeProperty = Objects.requireNonNull(typeProperty, "Type property cannot be null");
         this.ownerId = Objects.requireNonNull(ownerId, "Owner ID cannot be null");
         this.createdAt = Objects.requireNonNull(createdAt, "Created at cannot be null");
         this.updatedAt = Objects.requireNonNull(updatedAt, "Updated at cannot be null");
         this.status = Objects.requireNonNull(status, "Status cannot be null");
         this.address = Objects.requireNonNull(address, "Address cannot be null");
 
-        validatePricesByModality(salePrice, rentPrice, modality);
+        validatePricesByModality(salePrice, rentPrice, typeProperty);
         this.salePrice = salePrice;
         this.rentPrice = rentPrice;
 
@@ -63,6 +64,7 @@ public class Property {
         this.areaInSquareMeters = areaInSquareMeters;
         this.petsAllowed = petsAllowed;
         this.furnished = furnished;
+        this.rentType = rentType;
 
         validateArea();
         validateBedroomsAndBathrooms();
@@ -78,32 +80,15 @@ public class Property {
         return title.trim();
     }
 
-    private void validatePricesByModality(BigDecimal salePrice, BigDecimal rentPrice, Modality modality) {
-        switch (modality) {
-            case HOUSE:
-            case APARTMENT:
-                if (salePrice == null && rentPrice == null) {
-                    throw new IllegalArgumentException("At least one price (sale or rent) must be provided for HOUSE or APARTMENT");
-                }
-                if (salePrice != null && salePrice.compareTo(BigDecimal.ZERO) <= 0) {
-                    throw new IllegalArgumentException("Sale price must be greater than zero");
-                }
-                if (rentPrice != null && rentPrice.compareTo(BigDecimal.ZERO) <= 0) {
-                    throw new IllegalArgumentException("Rent price must be greater than zero");
-                }
-                break;
-
-            case ROOM:
-                if (rentPrice == null) {
-                    throw new IllegalArgumentException("Rent price is required for ROOM modality");
-                }
-                if (rentPrice.compareTo(BigDecimal.ZERO) <= 0) {
-                    throw new IllegalArgumentException("Rent price must be greater than zero");
-                }
-                if (salePrice != null) {
-                    throw new IllegalArgumentException("Sale price must be null for ROOM modality");
-                }
-                break;
+    private void validatePricesByModality(BigDecimal salePrice, BigDecimal rentPrice, TypeProperty typeProperty) {
+        if (salePrice == null && rentPrice == null) {
+            throw new IllegalArgumentException("At least one price (sale or rent) must be provided for HOUSE or APARTMENT");
+        }
+        if (salePrice != null && salePrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Sale price must be greater than zero");
+        }
+        if (rentPrice != null && rentPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Rent price must be greater than zero");
         }
     }
 
@@ -119,12 +104,6 @@ public class Property {
         }
         if (numberOfBathrooms != null && numberOfBathrooms < 0) {
             throw new IllegalArgumentException("Number of bathrooms cannot be negative");
-        }
-
-        if (modality == Modality.ROOM) {
-            if (numberOfBedrooms != null && numberOfBedrooms > 1) {
-                throw new IllegalArgumentException("ROOM modality can only have 0 or 1 bedroom");
-            }
         }
     }
 
@@ -186,7 +165,7 @@ public class Property {
         validatePricesByModality(
                 salePrice != null ? salePrice : this.salePrice,
                 rentPrice != null ? rentPrice : this.rentPrice,
-                this.modality
+                this.typeProperty
         );
 
         if (salePrice != null) {
@@ -203,9 +182,6 @@ public class Property {
         if (this.status != PropertyStatus.PUBLISHED) {
             throw new IllegalStateException("Only published properties can be marked as rented");
         }
-        if (this.modality == Modality.ROOM) {
-            throw new IllegalStateException("ROOM modality cannot be marked as rented, use individual room rental instead");
-        }
         this.status = PropertyStatus.RENTED;
         this.updatedAt = LocalDateTime.now();
     }
@@ -213,9 +189,6 @@ public class Property {
     public void markAsSold() {
         if (this.status != PropertyStatus.PUBLISHED) {
             throw new IllegalStateException("Only published properties can be marked as sold");
-        }
-        if (this.modality == Modality.ROOM) {
-            throw new IllegalStateException("ROOM modality cannot be sold");
         }
         if (this.salePrice == null) {
             throw new IllegalStateException("Property without sale price cannot be marked as sold");
@@ -253,10 +226,6 @@ public class Property {
         return isPublished() && salePrice != null;
     }
 
-    public boolean isRoomModality() {
-        return modality == Modality.ROOM;
-    }
-
     public PropertyId getId() {
         return id;
     }
@@ -281,8 +250,8 @@ public class Property {
         return rentPrice;
     }
 
-    public Modality getModality() {
-        return modality;
+    public TypeProperty getTypeProperty() {
+        return typeProperty;
     }
 
     public PropertyStatus getStatus() {
@@ -333,6 +302,10 @@ public class Property {
         return address;
     }
 
+    public RentType getRentType() {
+        return rentType;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -351,9 +324,10 @@ public class Property {
         return "Property{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
-                ", modality=" + modality +
+                ", typeProperty=" + typeProperty +
                 ", status=" + status +
                 ", ownerId=" + ownerId +
+                ", rentType=" + rentType +
                 '}';
     }
 }

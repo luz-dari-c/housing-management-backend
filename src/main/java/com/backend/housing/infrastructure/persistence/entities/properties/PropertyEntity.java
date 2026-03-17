@@ -1,7 +1,8 @@
-package com.backend.housing.infrastructure.persistence.entities;
+package com.backend.housing.infrastructure.persistence.entities.properties;
 
 
-import com.backend.housing.domain.entity.properties.Modality;
+import com.backend.housing.domain.entity.properties.RentType;
+import com.backend.housing.domain.entity.properties.TypeProperty;
 import com.backend.housing.domain.entity.properties.PropertyStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -37,9 +38,9 @@ public class PropertyEntity {
     @Column(name = "rent_price")
     private BigDecimal rentPrice;
 
+    @Column(name = "type_property", nullable = false)
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Modality modality;
+    private TypeProperty typeProperty;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
@@ -81,4 +82,7 @@ public class PropertyEntity {
 
     @Embedded
     private AddressEmbeddable address;
+
+    @Column(name = "rent_type")
+    private RentType rentType;
 }

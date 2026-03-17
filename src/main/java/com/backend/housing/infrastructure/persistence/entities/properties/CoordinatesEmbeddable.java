@@ -1,4 +1,4 @@
-package com.backend.housing.infrastructure.persistence.entities;
+package com.backend.housing.infrastructure.persistence.entities.properties;
 
 
 import jakarta.persistence.Embeddable;

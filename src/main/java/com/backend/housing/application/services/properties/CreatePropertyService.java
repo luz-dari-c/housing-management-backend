@@ -1,4 +1,4 @@
-package com.backend.housing.application.services;
+package com.backend.housing.application.services.properties;
 
 
 import com.backend.housing.domain.entity.properties.Property;
@@ -7,11 +7,8 @@ import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 import com.backend.housing.domain.ports.in.properties.CreatePropertyUseCase;
 import com.backend.housing.application.Commands.properties.CreatePropertyCommand;
 import com.backend.housing.domain.ports.out.PropertyRepository;
-import org.aspectj.bridge.ICommand;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.attribute.UserPrincipalNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -44,8 +41,8 @@ private final PropertyRepository propertyRepository;
                 command.getCoordinates(),
                 command.getSalePrice(),
                 command.getRentPrice(),
-                command.getModality(),
-                PropertyStatus.DRAFT,
+                command.getTypeProperty(),
+                PropertyStatus.CREATED,
                 command.getOwnerId(),
                 LocalDateTime.now(),
                 LocalDateTime.now(),
@@ -56,7 +53,8 @@ private final PropertyRepository propertyRepository;
                 command.getAreaInSquareMeters(),
                 command.isPetsAllowed(),
                 command.getAddress(),
-                command.isFurnished()
+                command.isFurnished(),
+                command.getRentType()
         );
 
 

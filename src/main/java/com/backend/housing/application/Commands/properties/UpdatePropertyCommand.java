@@ -1,6 +1,6 @@
 package com.backend.housing.application.Commands.properties;
 
-import com.backend.housing.domain.entity.properties.Modality;
+import com.backend.housing.domain.entity.properties.TypeProperty;
 import com.backend.housing.domain.entity.properties.PropertyStatus;
 import com.backend.housing.domain.entity.properties.valueObjects.Address;
 import com.backend.housing.domain.entity.properties.valueObjects.Coordinates;
@@ -17,7 +17,7 @@ public class UpdatePropertyCommand {
     private final Coordinates coordinates;
     private final BigDecimal salePrice;
     private final BigDecimal rentPrice;
-    private final Modality modality;
+    private final TypeProperty typeProperty;
     private final PropertyStatus status;
     private final List<String> imageUrls;
     private final Integer numberOfBedrooms;
@@ -34,7 +34,7 @@ public class UpdatePropertyCommand {
             Coordinates coordinates,
             BigDecimal salePrice,
             BigDecimal rentPrice,
-            Modality modality,
+            TypeProperty typeProperty,
             PropertyStatus status,
             List<String> imageUrls,
             Integer numberOfBedrooms,
@@ -63,7 +63,7 @@ public class UpdatePropertyCommand {
         this.coordinates = coordinates;
         this.salePrice = salePrice;
         this.rentPrice = rentPrice;
-        this.modality = modality;
+        this.typeProperty = typeProperty;
         this.status = status;
         this.imageUrls = imageUrls;
         this.numberOfBedrooms = numberOfBedrooms;
@@ -80,7 +80,7 @@ public class UpdatePropertyCommand {
     public Coordinates getCoordinates() { return coordinates; }
     public BigDecimal getSalePrice() { return salePrice; }
     public BigDecimal getRentPrice() { return rentPrice; }
-    public Modality getModality() { return modality; }
+    public TypeProperty getModality() { return typeProperty; }
     public PropertyStatus getStatus() { return status; }
     public List<String> getImageUrls() { return imageUrls; }
     public Integer getNumberOfBedrooms() { return numberOfBedrooms; }

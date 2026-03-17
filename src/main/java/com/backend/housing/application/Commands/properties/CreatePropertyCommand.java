@@ -1,6 +1,7 @@
 package com.backend.housing.application.Commands.properties;
 
-import com.backend.housing.domain.entity.properties.Modality;
+import com.backend.housing.domain.entity.properties.RentType;
+import com.backend.housing.domain.entity.properties.TypeProperty;
 import com.backend.housing.domain.entity.properties.PropertyStatus;
 import com.backend.housing.domain.entity.properties.valueObjects.Address;
 import com.backend.housing.domain.entity.properties.valueObjects.Coordinates;
@@ -14,7 +15,7 @@ public class CreatePropertyCommand {
     private final Coordinates coordinates;
     private final BigDecimal salePrice;
     private final BigDecimal rentPrice;
-    private final Modality modality;
+    private final TypeProperty typeProperty;
     private final PropertyStatus initialStatus;
     private final List<String> imageUrls;
     private final Integer numberOfBedrooms;
@@ -23,14 +24,15 @@ public class CreatePropertyCommand {
     private final boolean petsAllowed;
     private final Address address;
     private final boolean furnished;
+    private final RentType rentType;
 
     public CreatePropertyCommand(Long ownerId, String title, String description,
                                  Coordinates coordinates, BigDecimal salePrice,
-                                 BigDecimal rentPrice, Modality modality,
+                                 BigDecimal rentPrice, TypeProperty typeProperty,
                                  PropertyStatus initialStatus, List<String> imageUrls,
                                  Integer numberOfBedrooms, Integer numberOfBathrooms,
                                  Integer areaInSquareMeters, boolean petsAllowed,
-                                 Address address, boolean furnished) {
+                                 Address address, boolean furnished, RentType rentType) {
 
         if (ownerId == null) {
             throw new IllegalArgumentException("ownerId is required");
@@ -38,7 +40,7 @@ public class CreatePropertyCommand {
         if (title == null){
             throw new IllegalArgumentException("tittle is required");
         }
-        if (modality ==null){
+        if (typeProperty ==null){
             throw new IllegalArgumentException("modality is required");
         }
         if (address == null){
@@ -68,7 +70,7 @@ public class CreatePropertyCommand {
         this.coordinates = coordinates;
         this.salePrice = salePrice;
         this.rentPrice = rentPrice;
-        this.modality = modality;
+        this.typeProperty = typeProperty;
         this.imageUrls = imageUrls;
         this.numberOfBedrooms = numberOfBedrooms;
         this.numberOfBathrooms = numberOfBathrooms;
@@ -76,6 +78,7 @@ public class CreatePropertyCommand {
         this.petsAllowed = petsAllowed;
         this.address = address;
         this.furnished = furnished;
+        this.rentType = rentType;
     }
 
     public Long getOwnerId() { return ownerId; }
@@ -84,7 +87,7 @@ public class CreatePropertyCommand {
     public Coordinates getCoordinates() { return coordinates; }
     public BigDecimal getSalePrice() { return salePrice; }
     public BigDecimal getRentPrice() { return rentPrice; }
-    public Modality getModality() { return modality; }
+    public TypeProperty getTypeProperty() { return typeProperty; }
     public PropertyStatus getInitialStatus() { return initialStatus; }
     public List<String> getImageUrls() { return imageUrls; }
     public Integer getNumberOfBedrooms() { return numberOfBedrooms; }
@@ -93,4 +96,8 @@ public class CreatePropertyCommand {
     public boolean isPetsAllowed() { return petsAllowed; }
     public Address getAddress() { return address; }
     public boolean isFurnished() { return furnished; }
+
+    public RentType getRentType() {
+        return rentType;
+    }
 }
