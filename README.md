@@ -187,5 +187,75 @@ El proyecto implementa **Arquitectura Hexagonal** (Puertos y Adaptadores) en un 
 - Swagger/OpenAPI (documentación)
 
 ---
+</div>
 
+### 📐 Principios de Diseño
+
+| Principio | Aplicación |
+|:---------:|------------|
+| **🧱 Dominio Puro** | Cero dependencias externas. Solo Java puro. |
+| **🎯 Casos de Uso** | Cada operación de negocio es un caso de uso independiente. |
+| **🔌 Puertos y Adaptadores** | La infraestructura implementa interfaces definidas en dominio. |
+| **📢 Eventos** | Comunicación desacoplada entre módulos mediante eventos. |
+
+---
+
+## 🛠️ STACK TECNOLÓGICO
+
+<div align="center">
+  
+| Capa | Tecnología | Icono |
+|:----:|------------|:-----:|
+| **Backend** | Java 17 + Spring Boot 3 | <img src="https://img.icons8.com/color/48/000000/java-coffee-cup-logo.png" width="30"/> |
+| **Seguridad** | Spring Security + JWT | <img src="https://img.icons8.com/color/48/000000/security-checked.png" width="30"/> |
+| **Base de Datos** | PostgreSQL 14 | <img src="https://img.icons8.com/color/48/000000/postgreesql.png" width="30"/> |
+| **Storage** | Supabase | <img src="https://img.icons8.com/color/48/000000/supabase.png" width="30"/> |
+| **Mapas** | OpenStreetMap + Leaflet | <img src="https://img.icons8.com/color/48/000000/map.png" width="30"/> |
+| **Frontend** | *Por definir* | <img src="https://img.icons8.com/color/48/000000/javascript.png" width="30"/> |
+| **Build** | Maven | <img src="https://img.icons8.com/color/48/000000/maven-ios.png" width="30"/> |
+
+</div>
+
+---
+
+## 📂 ORGANIZACIÓN DEL CÓDIGO
+
+```ascii
+📦 com.tuproyecto.housing
+ ┣━━ 📁 domain                            # 🧠 EL CORAZÓN DEL NEGOCIO
+ ┃   ┣━━ 📁 model                          # Entidades y objetos de valor
+ ┃   ┃   ┣━━ 📁 users                       # 👤 Usuarios
+ ┃   ┃   ┣━━ 📁 properties                  # 🏠 Propiedades
+ ┃   ┃   ┣━━ 📁 rooms                        # 🚪 Habitaciones
+ ┃   ┃   ┣━━ 📁 payments                     # 💰 Pagos
+ ┃   ┃   ┣━━ 📁 rentalcontracts              # 📄 Contratos
+ ┃   ┃   ┣━━ 📁 sales                        # 📈 Ventas
+ ┃   ┃   ┗━━ 📁 reputation                   # ⭐ Reputación
+ ┃   ┣━━ 📁 repositories                   # 📦 Contratos de persistencia
+ ┃   ┗━━ 📁 events                          # 📢 Eventos de dominio
+ ┃
+ ┣━━ 📁 application                       # ⚙️ LA APLICACIÓN
+ ┃   ┣━━ 📁 casosuso                       # 📋 Casos de uso
+ ┃   ┃   ┣━━ 📁 users
+ ┃   ┃   ┣━━ 📁 properties
+ ┃   ┃   ┣━━ 📁 rooms
+ ┃   ┃   ┣━━ 📁 payments
+ ┃   ┃   ┣━━ 📁 rentalcontracts
+ ┃   ┃   ┣━━ 📁 sales
+ ┃   ┃   ┗━━ 📁 reputation
+ ┃   ┗━━ 📁 servicios                       # 🔧 Servicios de aplicación
+ ┃
+ ┗━━ 📁 infrastructure                    # 🔌 DETALLES TÉCNICOS
+     ┣━━ 📁 config                         # ⚙️ Configuración
+     ┣━━ 📁 security                        # 🔐 JWT, filtros
+     ┣━━ 📁 persistence                     # 🗄️ Implementación JPA
+     ┃   ┣━━ 📁 entities                     # Entidades de BD
+     ┃   ┣━━ 📁 repositories                  # Implementaciones
+     ┃   ┗━━ 📁 mappers                       # Conversores
+     ┣━━ 📁 web                             # 🌐 Controladores REST
+     ┃   ┣━━ 📁 controllers
+     ┃   ┣━━ 📁 dtos
+     ┃   ┗━━ 📁 mappers
+     ┗━━ 📁 external                         # ☁️ Servicios externos
+         ┗━━ 📁 supabase                      # Supabase Storage
 
