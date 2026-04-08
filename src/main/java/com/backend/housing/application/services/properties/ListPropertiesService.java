@@ -2,10 +2,11 @@ package com.backend.housing.application.services.properties;
 
 
 import com.backend.housing.domain.entity.properties.Property;
+import com.backend.housing.domain.entity.properties.enums.PropertyStatus;
 import com.backend.housing.domain.exceptions.InvalidPaginationException;
 import com.backend.housing.domain.ports.in.properties.ListPropertiesUseCase;
-import com.backend.housing.domain.ports.out.PropertyRepository;
-import com.backend.housing.domain.valueObjects.Pagination;
+import com.backend.housing.domain.ports.out.properties.PropertyRepository;
+import com.backend.housing.domain.valueobjects.Pagination;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +24,6 @@ public class ListPropertiesService  implements ListPropertiesUseCase {
         if (pagination == null){
             throw new InvalidPaginationException("pagination cant be null");
         }
-        return repository.findAll(pagination);
+        return repository.findByPropertyStatus(PropertyStatus.PUBLISHED, pagination);
     }
 }

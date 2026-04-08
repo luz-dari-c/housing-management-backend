@@ -5,7 +5,7 @@ import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 import com.backend.housing.domain.exceptions.InvalidIdException;
 import com.backend.housing.domain.exceptions.InvalidNotFoundException;
 import com.backend.housing.domain.ports.in.properties.GetPropertyUseCase;
-import com.backend.housing.domain.ports.out.PropertyRepository;
+import com.backend.housing.domain.ports.out.properties.PropertyRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -23,12 +23,9 @@ public class GetPropertyService implements GetPropertyUseCase {
     }
 
     @Override
-    public Property getProperty(PropertyId id, UUID requestingUserId) {
+    public Property getProperty(PropertyId id) {
         if (id ==  null){
             throw new InvalidIdException("Property ID cannot be null");
-        }
-        if (requestingUserId == null){
-            throw new IllegalArgumentException("User Id cannot be null");
         }
 
         Property property = repository.findById(id).orElseThrow(()-> new InvalidNotFoundException("Property not found with id: " + id));

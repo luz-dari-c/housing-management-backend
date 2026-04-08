@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface GetPropertyUseCase {
 
-    Property getProperty(PropertyId id, UUID requestingUserId);
+    Property getProperty(PropertyId id);
 
 
 

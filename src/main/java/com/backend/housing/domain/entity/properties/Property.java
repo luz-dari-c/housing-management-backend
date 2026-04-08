@@ -1,23 +1,27 @@
 package com.backend.housing.domain.entity.properties;
 
+import com.backend.housing.domain.entity.properties.enums.PropertyStatus;
+import com.backend.housing.domain.entity.properties.enums.TransactionType;
+import com.backend.housing.domain.entity.properties.enums.TypeProperty;
 import com.backend.housing.domain.entity.properties.valueObjects.Address;
 import com.backend.housing.domain.entity.properties.valueObjects.Coordinates;
+import com.backend.housing.domain.entity.properties.valueObjects.Price;
 import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
+import com.backend.housing.domain.entity.properties.valueObjects.RentalTerms;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 public class Property {
+
     private final PropertyId id;
     private String title;
     private String description;
     private Coordinates coordinates;
-    private BigDecimal salePrice;
-    private BigDecimal rentPrice;
+    private Price price;
     private TypeProperty typeProperty;
     private PropertyStatus status;
     private final Long ownerId;
@@ -28,202 +32,181 @@ public class Property {
     private Integer numberOfBedrooms;
     private Integer numberOfBathrooms;
     private Integer areaInSquareMeters;
-    private boolean petsAllowed;
-    private boolean furnished;
     private Address address;
-    private RentType rentType;
+    private RentalTerms rentalTerms;
 
     public Property(PropertyId id, String title, String description,
-                    Coordinates coordinates, BigDecimal salePrice,
-                    BigDecimal rentPrice, TypeProperty typeProperty, PropertyStatus status,
-                    Long ownerId, LocalDateTime createdAt, LocalDateTime updatedAt,
-                    LocalDateTime publishedAt, List<String> imageUrls,
+                    Coordinates coordinates, Price price, TypeProperty typeProperty,
+                    PropertyStatus status, Long ownerId, LocalDateTime createdAt,
+                    LocalDateTime updatedAt, LocalDateTime publishedAt, List<String> imageUrls,
                     Integer numberOfBedrooms, Integer numberOfBathrooms,
-                    Integer areaInSquareMeters, boolean petsAllowed,
-                    Address address, boolean furnished, RentType rentType) {
+                    Integer areaInSquareMeters, Address address,
+                    RentalTerms rentalTerms) {
 
-        this.id = Objects.requireNonNull(id, "Property ID cannot be null");
+        this.id = Objects.requireNonNull(id);
         this.title = validateTitle(title);
         this.description = description;
         this.coordinates = coordinates;
-        this.typeProperty = Objects.requireNonNull(typeProperty, "Type property cannot be null");
-        this.ownerId = Objects.requireNonNull(ownerId, "Owner ID cannot be null");
-        this.createdAt = Objects.requireNonNull(createdAt, "Created at cannot be null");
-        this.updatedAt = Objects.requireNonNull(updatedAt, "Updated at cannot be null");
-        this.status = Objects.requireNonNull(status, "Status cannot be null");
-        this.address = Objects.requireNonNull(address, "Address cannot be null");
-
-        validatePricesByModality(salePrice, rentPrice, typeProperty);
-        this.salePrice = salePrice;
-        this.rentPrice = rentPrice;
-
+        this.price = Objects.requireNonNull(price);
+        this.typeProperty = Objects.requireNonNull(typeProperty);
+        this.ownerId = Objects.requireNonNull(ownerId);
+        this.createdAt = Objects.requireNonNull(createdAt);
+        this.updatedAt = Objects.requireNonNull(updatedAt);
+        this.status = Objects.requireNonNull(status);
+        this.address = Objects.requireNonNull(address);
         this.publishedAt = publishedAt;
         this.imageUrls = imageUrls != null ? new ArrayList<>(imageUrls) : new ArrayList<>();
         this.numberOfBedrooms = numberOfBedrooms;
         this.numberOfBathrooms = numberOfBathrooms;
         this.areaInSquareMeters = areaInSquareMeters;
-        this.petsAllowed = petsAllowed;
-        this.furnished = furnished;
-        this.rentType = rentType;
+        this.rentalTerms = rentalTerms;
 
         validateArea();
         validateBedroomsAndBathrooms();
+        validateRentalTerms();
     }
 
-    private String validateTitle(String title) {
-        if (title == null || title.trim().isEmpty()) {
-            throw new IllegalArgumentException("Title cannot be null or empty");
-        }
-        if (title.length() < 3 || title.length() > 200) {
-            throw new IllegalArgumentException("Title must be between 3 and 200 characters");
-        }
-        return title.trim();
+    public static Property create(PropertyId id, String title, String description,
+                                  Coordinates coordinates, Price price, TypeProperty typeProperty,
+                                  Long ownerId, Address address, Integer numberOfBedrooms,
+                                  Integer numberOfBathrooms, Integer areaInSquareMeters,
+                                  RentalTerms rentalTerms) {
+
+        return new Property(
+                id, title, description, coordinates, price, typeProperty,
+                PropertyStatus.DRAFT, ownerId, LocalDateTime.now(), LocalDateTime.now(),
+                null, new ArrayList<>(), numberOfBedrooms, numberOfBathrooms,
+                areaInSquareMeters, address, rentalTerms
+        );
     }
 
-    private void validatePricesByModality(BigDecimal salePrice, BigDecimal rentPrice, TypeProperty typeProperty) {
-        if (salePrice == null && rentPrice == null) {
-            throw new IllegalArgumentException("At least one price (sale or rent) must be provided for HOUSE or APARTMENT");
+    public static Property reconstitute(PropertyId id, String title, String description,
+                                        Coordinates coordinates, Price price, TypeProperty typeProperty,
+                                        PropertyStatus status, Long ownerId, LocalDateTime createdAt,
+                                        LocalDateTime updatedAt, LocalDateTime publishedAt,
+                                        List<String> imageUrls, Integer numberOfBedrooms,
+                                        Integer numberOfBathrooms, Integer areaInSquareMeters,
+                                        Address address, RentalTerms rentalTerms) {
+
+        return new Property(
+                id, title, description, coordinates, price, typeProperty, status, ownerId,
+                createdAt, updatedAt, publishedAt, imageUrls, numberOfBedrooms,
+                numberOfBathrooms, areaInSquareMeters, address, rentalTerms
+        );
+    }
+
+    public void update(
+            String title,
+            String description,
+            Coordinates coordinates,
+            Price price,
+            Address address,
+            Integer numberOfBedrooms,
+            Integer numberOfBathrooms,
+            Integer areaInSquareMeters,
+            RentalTerms rentalTerms
+    ) {
+        if (title != null) this.title = title;
+        if (description != null) this.description = description;
+        if (coordinates != null) this.coordinates = coordinates;
+        if (price != null) this.price = price;
+        if (address != null) this.address = address;
+        if (numberOfBedrooms != null) this.numberOfBedrooms = numberOfBedrooms;
+        if (numberOfBathrooms != null) this.numberOfBathrooms = numberOfBathrooms;
+        if (areaInSquareMeters != null) this.areaInSquareMeters = areaInSquareMeters;
+        if (rentalTerms != null) this.rentalTerms = rentalTerms;
+
+        this.updatedAt = LocalDateTime.now();
+    }
+    private void validateRentalTerms() {
+        if (price.isForRent() && rentalTerms == null) {
+            throw new IllegalStateException();
         }
-        if (salePrice != null && salePrice.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Sale price must be greater than zero");
-        }
-        if (rentPrice != null && rentPrice.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Rent price must be greater than zero");
+        if (price.isForSale() && rentalTerms != null) {
+            throw new IllegalStateException();
         }
     }
 
-    private void validateArea() {
-        if (areaInSquareMeters != null && areaInSquareMeters <= 0) {
-            throw new IllegalArgumentException("Area must be greater than zero if provided");
-        }
+    public void addImages(List<String> newImages) {
+        if (newImages == null || newImages.isEmpty()) return;
+
+        this.imageUrls.addAll(newImages);
+        this.updatedAt = LocalDateTime.now();
     }
 
-    private void validateBedroomsAndBathrooms() {
-        if (numberOfBedrooms != null && numberOfBedrooms < 0) {
-            throw new IllegalArgumentException("Number of bedrooms cannot be negative");
-        }
-        if (numberOfBathrooms != null && numberOfBathrooms < 0) {
-            throw new IllegalArgumentException("Number of bathrooms cannot be negative");
-        }
-    }
+
 
     public void publish() {
         if (this.status != PropertyStatus.DRAFT && this.status != PropertyStatus.CREATED) {
-            throw new IllegalStateException("Only properties in DRAFT or CREATED status can be published");
+            throw new IllegalStateException();
         }
+        validateRentalTerms();
         this.status = PropertyStatus.PUBLISHED;
         this.publishedAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void update(String title, String description, BigDecimal salePrice,
-                       BigDecimal rentPrice, Address address, Coordinates coordinates,
-                       Integer numberOfBedrooms, Integer numberOfBathrooms,
-                       Integer areaInSquareMeters, Boolean petsAllowed, Boolean furnished) {
-
-        if (this.status != PropertyStatus.DRAFT && this.status != PropertyStatus.CREATED) {
-            throw new IllegalStateException("Only properties in DRAFT or CREATED status can be updated");
-        }
-
-        if (title != null) {
-            this.title = validateTitle(title);
-        }
-        if (description != null) {
-            this.description = description;
-        }
-        if (address != null) {
-            this.address = address;
-        }
-        if (coordinates != null) {
-            this.coordinates = coordinates;
-        }
-        if (numberOfBedrooms != null) {
-            if (numberOfBedrooms < 0) {
-                throw new IllegalArgumentException("Number of bedrooms cannot be negative");
-            }
-            this.numberOfBedrooms = numberOfBedrooms;
-        }
-        if (numberOfBathrooms != null) {
-            if (numberOfBathrooms < 0) {
-                throw new IllegalArgumentException("Number of bathrooms cannot be negative");
-            }
-            this.numberOfBathrooms = numberOfBathrooms;
-        }
-        if (areaInSquareMeters != null) {
-            if (areaInSquareMeters <= 0) {
-                throw new IllegalArgumentException("Area must be greater than zero");
-            }
-            this.areaInSquareMeters = areaInSquareMeters;
-        }
-        if (petsAllowed != null) {
-            this.petsAllowed = petsAllowed;
-        }
-        if (furnished != null) {
-            this.furnished = furnished;
-        }
-
-        validatePricesByModality(
-                salePrice != null ? salePrice : this.salePrice,
-                rentPrice != null ? rentPrice : this.rentPrice,
-                this.typeProperty
-        );
-
-        if (salePrice != null) {
-            this.salePrice = salePrice;
-        }
-        if (rentPrice != null) {
-            this.rentPrice = rentPrice;
-        }
-
-        this.updatedAt = LocalDateTime.now();
-    }
-
     public void markAsRented() {
         if (this.status != PropertyStatus.PUBLISHED) {
-            throw new IllegalStateException("Only published properties can be marked as rented");
+            throw new IllegalStateException();
+        }
+        if (!price.isForRent()) {
+            throw new IllegalStateException();
         }
         this.status = PropertyStatus.RENTED;
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void markAsAvailable() {
+        if (this.status != PropertyStatus.RENTED) {
+            throw new IllegalStateException("Only rented properties can be made available again");
+        }
+        this.status = PropertyStatus.PUBLISHED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public void markAsSold() {
         if (this.status != PropertyStatus.PUBLISHED) {
-            throw new IllegalStateException("Only published properties can be marked as sold");
+            throw new IllegalStateException();
         }
-        if (this.salePrice == null) {
-            throw new IllegalStateException("Property without sale price cannot be marked as sold");
+        if (!price.isForSale()) {
+            throw new IllegalStateException();
         }
         this.status = PropertyStatus.SOLD;
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void addImage(String imageUrl) {
-        if (imageUrl == null || imageUrl.trim().isEmpty()) {
-            throw new IllegalArgumentException("Image URL cannot be null or empty");
+    private String validateTitle(String title) {
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException();
         }
-        this.imageUrls.add(imageUrl);
-        this.updatedAt = LocalDateTime.now();
+        if (title.length() < 3 || title.length() > 200) {
+            throw new IllegalArgumentException();
+        }
+        return title.trim();
     }
 
-    public void removeImage(String imageUrl) {
-        this.imageUrls.remove(imageUrl);
-        this.updatedAt = LocalDateTime.now();
+    private void validateArea() {
+        if (areaInSquareMeters != null && areaInSquareMeters <= 0) {
+            throw new IllegalArgumentException();
+        }
     }
 
-    public boolean isOwnedBy(Long userId) {
-        return this.ownerId.equals(userId);
-    }
-
-    public boolean isPublished() {
-        return this.status == PropertyStatus.PUBLISHED;
+    private void validateBedroomsAndBathrooms() {
+        if (numberOfBedrooms != null && numberOfBedrooms < 0) {
+            throw new IllegalArgumentException();
+        }
+        if (numberOfBathrooms != null && numberOfBathrooms < 0) {
+            throw new IllegalArgumentException();
+        }
     }
 
     public boolean isAvailableForRent() {
-        return isPublished() && rentPrice != null;
+        return status == PropertyStatus.PUBLISHED && price.isForRent();
     }
 
     public boolean isAvailableForSale() {
-        return isPublished() && salePrice != null;
+        return status == PropertyStatus.PUBLISHED && price.isForSale();
     }
 
     public PropertyId getId() {
@@ -234,24 +217,46 @@ public class Property {
         return title;
     }
 
+    public void setTitle(String title) {
+        this.title = validateTitle(title);
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public String getDescription() {
         return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public Coordinates getCoordinates() {
         return coordinates;
     }
 
-    public BigDecimal getSalePrice() {
-        return salePrice;
+    public void setCoordinates(Coordinates coordinates) {
+        this.coordinates = coordinates;
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public BigDecimal getRentPrice() {
-        return rentPrice;
+    public Price getPrice() {
+        return price;
+    }
+
+    public void setPrice(Price price) {
+        this.price = price;
+        validateRentalTerms();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public TypeProperty getTypeProperty() {
         return typeProperty;
+    }
+
+    public void setTypeProperty(TypeProperty typeProperty) {
+        this.typeProperty = typeProperty;
+        this.updatedAt = LocalDateTime.now();
     }
 
     public PropertyStatus getStatus() {
@@ -275,59 +280,68 @@ public class Property {
     }
 
     public List<String> getImageUrls() {
-        return Collections.unmodifiableList(imageUrls);
+        return List.copyOf(imageUrls);
+    }
+
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = new ArrayList<>(imageUrls);
+        this.updatedAt = LocalDateTime.now();
     }
 
     public Integer getNumberOfBedrooms() {
         return numberOfBedrooms;
     }
 
+    public void setNumberOfBedrooms(Integer numberOfBedrooms) {
+        this.numberOfBedrooms = numberOfBedrooms;
+        validateBedroomsAndBathrooms();
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public Integer getNumberOfBathrooms() {
         return numberOfBathrooms;
+    }
+
+    public void setNumberOfBathrooms(Integer numberOfBathrooms) {
+        this.numberOfBathrooms = numberOfBathrooms;
+        validateBedroomsAndBathrooms();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public Integer getAreaInSquareMeters() {
         return areaInSquareMeters;
     }
 
-    public boolean isPetsAllowed() {
-        return petsAllowed;
-    }
-
-    public boolean isFurnished() {
-        return furnished;
+    public void setAreaInSquareMeters(Integer areaInSquareMeters) {
+        this.areaInSquareMeters = areaInSquareMeters;
+        validateArea();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public Address getAddress() {
         return address;
     }
 
-    public RentType getRentType() {
-        return rentType;
+    public void setAddress(Address address) {
+        this.address = address;
+        this.updatedAt = LocalDateTime.now();
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Property property = (Property) o;
-        return Objects.equals(id, property.id);
+    public RentalTerms getRentalTerms() {
+        return rentalTerms;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
+    public void setRentalTerms(RentalTerms rentalTerms) {
+        this.rentalTerms = rentalTerms;
+        validateRentalTerms();
+        this.updatedAt = LocalDateTime.now();
     }
 
-    @Override
-    public String toString() {
-        return "Property{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", typeProperty=" + typeProperty +
-                ", status=" + status +
-                ", ownerId=" + ownerId +
-                ", rentType=" + rentType +
-                '}';
+    public TransactionType getTransactionType() {
+        return price.getTransactionType();
+    }
+
+    public BigDecimal getPriceAmount() {
+        return price.getAmount();
     }
 }

@@ -1,7 +1,10 @@
 package com.backend.housing.application.dto.request.properties;
 
-import com.backend.housing.domain.entity.properties.RentType;
-import com.backend.housing.domain.entity.properties.TypeProperty;
+import com.backend.housing.domain.entity.properties.enums.PaymentFrequency;
+import com.backend.housing.domain.entity.properties.enums.TransactionType;
+import com.backend.housing.domain.entity.properties.enums.TypeProperty;
+import com.backend.housing.domain.entity.properties.valueObjects.Address;
+import com.backend.housing.domain.entity.properties.valueObjects.Coordinates;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.Getter;
@@ -14,29 +17,28 @@ import java.util.List;
 @Setter
 public class CreatePropertyRequest {
 
-    @NotNull(message = "Owner ID is required")
-    private Long ownerId;
-
     @NotBlank(message = "Title is required")
     @Size(min = 3, max = 200, message = "Title must be between 3 and 200 characters")
     private String title;
 
+    @Size(max = 2000, message = "Description cannot exceed 2000 characters")
     private String description;
 
     @Valid
-    private CoordinatesRequest coordinates;
+    @NotNull(message = "Address is required")
+    private Address address;
 
     @Valid
-    private AddressRequest address;
+    private Coordinates coordinates;
 
+    @NotNull(message = "Transaction type is required (SALE or RENT)")
+    private TransactionType transactionType;
 
-    @DecimalMin(value = "0.0", inclusive = false, message = "Sale price must be greater than 0")
-    private BigDecimal salePrice;
+    @NotNull(message = "Price is required")
+    @DecimalMin(value = "0.01", message = "Price must be greater than zero")
+    private BigDecimal priceAmount;
 
-    @DecimalMin(value = "0.0", inclusive = false, message = "Rent price must be greater than 0")
-    private BigDecimal rentPrice;
-
-    @NotNull(message = "Modality is required")
+    @NotNull(message = "Property type is required")
     private TypeProperty typeProperty;
 
     private List<String> imageUrls;
@@ -47,13 +49,12 @@ public class CreatePropertyRequest {
     @Min(value = 0, message = "Number of bathrooms cannot be negative")
     private Integer numberOfBathrooms;
 
-    @Min(value = 1, message = "Area must be greater than 0")
+    @Min(value = 1, message = "Area must be greater than zero if provided")
     private Integer areaInSquareMeters;
 
-    private boolean petsAllowed;
+    private Boolean petsAllowed;
 
-    private boolean furnished;
+    private Boolean furnished;
 
-    private RentType rentType;
-
+    private PaymentFrequency paymentFrequency;
 }

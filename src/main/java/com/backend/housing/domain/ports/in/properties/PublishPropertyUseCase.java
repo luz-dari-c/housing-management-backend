@@ -6,7 +6,7 @@ import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 
 public interface PublishPropertyUseCase {
 
-    Property publish(PropertyId id);
+        void publish(PropertyId propertyId);
 
 
 }

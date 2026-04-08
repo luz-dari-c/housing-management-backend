@@ -4,7 +4,7 @@ package com.backend.housing.application.services.properties;
 import com.backend.housing.domain.entity.properties.Property;
 import com.backend.housing.domain.entity.properties.valueObjects.SearchPropertyQuery;
 import com.backend.housing.domain.ports.in.properties.SearchPropertyUseCase;
-import com.backend.housing.domain.ports.out.PropertySearchRepository;
+import com.backend.housing.domain.ports.out.properties.PropertySearchRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

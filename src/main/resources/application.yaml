@@ -3,9 +3,9 @@ spring:
     name: housing
 
   datasource:
-    url: jdbc:postgresql://ep-soft-breeze-aicyu3ti-pooler.c-4.us-east-1.aws.neon.tech:5432/neondb
-    username: neondb_owner
-    password: npg_LUdo0XrRWbI7
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5
@@ -26,11 +26,17 @@ spring:
     init:
       mode: always
 
-  server:
-    port: 8080
+server:
+  port: 8080
 
-  logging:
-    level:
-      root: INFO
-      org.hibernate.SQL: DEBUG
-      org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+supabase:
+
+    url: ${SUPABASE_URL}
+    key: ${SUPABASE_KEY}
+    bucket: property-images

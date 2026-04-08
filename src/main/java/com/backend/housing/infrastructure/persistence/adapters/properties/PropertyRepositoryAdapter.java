@@ -2,11 +2,12 @@ package com.backend.housing.infrastructure.persistence.adapters.properties;
 
 
 import com.backend.housing.domain.entity.properties.Property;
+import com.backend.housing.domain.entity.properties.enums.PropertyStatus;
 import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
-import com.backend.housing.domain.ports.out.PropertyRepository;
-import com.backend.housing.domain.valueObjects.Pagination;
+import com.backend.housing.domain.ports.out.properties.PropertyRepository;
+import com.backend.housing.domain.valueobjects.Pagination;
 import com.backend.housing.infrastructure.persistence.entities.properties.PropertyEntity;
-import com.backend.housing.infrastructure.persistence.mappers.PropertyEntityMapper;
+import com.backend.housing.infrastructure.persistence.mappers.properties.PropertyEntityMapper;
 import com.backend.housing.infrastructure.persistence.repositories.properties.JpaPropertyRepository;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class PropertyRepositoryAdapter  implements PropertyRepository {
@@ -51,7 +53,7 @@ public class PropertyRepositoryAdapter  implements PropertyRepository {
             return Optional.empty();
         }
 
-        Long idValue = id.getValue();
+        UUID idValue = id.getValue();
         Optional<PropertyEntity> optionalEntity = jpaPropertyRepository.findById(idValue);
 
         return optionalEntity.map(mapper::toDomain);
@@ -68,6 +70,56 @@ public class PropertyRepositoryAdapter  implements PropertyRepository {
 
         return jpaPropertyRepository
                 .findAll(pageable)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Property> findByPropertyStatus(PropertyStatus status, Pagination pagination) {
+
+        Pageable pageable = PageRequest.of(
+                pagination.getPage(),
+                pagination.getSize()
+        );
+
+        return jpaPropertyRepository
+                .findByPropertyStatus(status, pageable)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Property> findByOwnerIdAndPropertyStatus(Long ownerId, PropertyStatus status, Pagination pagination) {
+
+        Pageable pageable = PageRequest.of(
+                pagination.getPage(),
+                pagination.getSize()
+        );
+
+        return jpaPropertyRepository
+                .findByOwnerIdAndPropertyStatus(ownerId, status, pageable)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Property> findByOwnerId(Long ownerId, Pagination pagination) {
+
+        Pageable pageable = PageRequest.of(
+                pagination.getPage(),
+                pagination.getSize()
+        );
+
+        return jpaPropertyRepository
+                .findByOwnerId(ownerId, pageable)
                 .stream()
                 .map(mapper::toDomain)
                 .toList();

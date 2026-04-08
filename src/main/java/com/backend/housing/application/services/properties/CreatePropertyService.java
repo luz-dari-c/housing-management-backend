@@ -1,49 +1,73 @@
 package com.backend.housing.application.services.properties;
 
-
+import com.backend.housing.application.commands.properties.CreatePropertyCommand;
 import com.backend.housing.domain.entity.properties.Property;
-import com.backend.housing.domain.entity.properties.PropertyStatus;
-import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
+import com.backend.housing.domain.entity.properties.enums.PropertyStatus;
+import com.backend.housing.domain.entity.properties.enums.TransactionType;
+import com.backend.housing.domain.entity.properties.valueObjects.Price;
+import com.backend.housing.domain.entity.properties.valueObjects.RentalTerms;
+import com.backend.housing.domain.entity.users.User;
+import com.backend.housing.domain.exceptions.UserNotFoundException;
 import com.backend.housing.domain.ports.in.properties.CreatePropertyUseCase;
-import com.backend.housing.application.Commands.properties.CreatePropertyCommand;
-import com.backend.housing.domain.ports.out.PropertyRepository;
+import com.backend.housing.domain.ports.out.properties.PropertyRepository;
+import com.backend.housing.domain.ports.out.properties.UserValidationPort;
+import com.backend.housing.domain.ports.out.users.UserRoleServicePort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-
 @Service
-public class CreatePropertyService  implements CreatePropertyUseCase{
+public class CreatePropertyService implements CreatePropertyUseCase {
 
-// private final UserServicePort userServicePort;
-private final PropertyRepository propertyRepository;
+    private final PropertyRepository propertyRepository;
+    private final UserValidationPort userValidationPort;
+    private final UserRoleServicePort userRoleServicePort;
 
-    public  CreatePropertyService(PropertyRepository propertyRepository  /*UserServicePort userServicePort*/){
+    public CreatePropertyService(
+            PropertyRepository propertyRepository,
+            UserValidationPort userValidationPort,
+            UserRoleServicePort userRoleServicePort
+    ) {
         this.propertyRepository = propertyRepository;
- //       this.userServicePort = userServicePort;
-
+        this.userValidationPort = userValidationPort;
+        this.userRoleServicePort = userRoleServicePort;
     }
 
-    public Property createProperty(CreatePropertyCommand command){
+    @Override
+    public Property createProperty(CreatePropertyCommand command) {
 
-    //    if (!userServicePort.userExists(command.getOwnerId())) {
-     //       throw new UserNotFoundException("User not found");
-     //   }
+        String email = getUserEmailFromToken();
 
+        User user = userValidationPort.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
 
-        PropertyId id = PropertyId.generate();
+        Long ownerId = user.getId();
+
+        ensureOwnerRole(ownerId);
+
+        Price price = resolvePrice(command);
+
+        RentalTerms rentalTerms = null;
+        if (command.getTransactionType() == TransactionType.RENT) {
+            rentalTerms = new RentalTerms(
+                    command.getPaymentFrequency(),
+                    command.getPetsAllowed(),
+                    command.getFurnished()
+            );
+        }
 
         Property property = new Property(
-                PropertyId.generate(),
+                command.getPropertyId(),
                 command.getTitle(),
                 command.getDescription(),
                 command.getCoordinates(),
-                command.getSalePrice(),
-                command.getRentPrice(),
+                price,
                 command.getTypeProperty(),
                 PropertyStatus.CREATED,
-                command.getOwnerId(),
+                ownerId,
                 LocalDateTime.now(),
                 LocalDateTime.now(),
                 null,
@@ -51,19 +75,34 @@ private final PropertyRepository propertyRepository;
                 command.getNumberOfBedrooms(),
                 command.getNumberOfBathrooms(),
                 command.getAreaInSquareMeters(),
-                command.isPetsAllowed(),
                 command.getAddress(),
-                command.isFurnished(),
-                command.getRentType()
-        );
+                rentalTerms
 
+                );
 
         return propertyRepository.save(property);
-
     }
 
+    private void ensureOwnerRole(Long userId) {
+        if (!userRoleServicePort.isUserOwner(userId)) {
+            userRoleServicePort.assignOwnerRole(userId);
+        }
+    }
 
+    private String getUserEmailFromToken() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("Usuario no autenticado");
+        }
 
+        return authentication.getName();
+    }
 
+    private Price resolvePrice(CreatePropertyCommand command) {
+        if (command.getTransactionType() == TransactionType.SALE) {
+            return Price.forSale(command.getPriceAmount());
+        }
+        return Price.forRent(command.getPriceAmount());
+    }
 }

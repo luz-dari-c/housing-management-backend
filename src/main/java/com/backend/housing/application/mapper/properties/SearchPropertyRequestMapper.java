@@ -21,7 +21,6 @@ public class SearchPropertyRequestMapper {
                 request.getMinPrice(),
                 request.getMaxPrice(),
                 request.getTypeProperty(),
-                request.getRentType(),
                 request.getBedrooms(),
                 request.getPetsAllowed(),
                 request.getFurnished()
