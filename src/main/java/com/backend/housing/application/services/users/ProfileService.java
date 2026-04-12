@@ -1,13 +1,13 @@
-// application/services/users/ProfileService.java
 package com.backend.housing.application.services.users;
+
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
 
 import com.backend.housing.application.dto.request.profile.UpdateProfileRequest;
 import com.backend.housing.domain.entity.users.User;
 import com.backend.housing.domain.ports.in.profile.ProfileUseCase;
 import com.backend.housing.domain.ports.out.users.UserRepositoryPort;
-import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class ProfileService implements ProfileUseCase {
@@ -28,13 +28,15 @@ public class ProfileService implements ProfileUseCase {
         User user = userRepositoryPort.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
+        // Actualizar solo los campos permitidos (NO cédula)
         if (request.getPrimerNombre() != null) user.setPrimerNombre(request.getPrimerNombre());
         if (request.getSegundoNombre() != null) user.setSegundoNombre(request.getSegundoNombre());
         if (request.getPrimerApellido() != null) user.setPrimerApellido(request.getPrimerApellido());
         if (request.getSegundoApellido() != null) user.setSegundoApellido(request.getSegundoApellido());
         if (request.getEmail() != null) user.setEmail(request.getEmail());
-        if (request.getCedula() != null) user.setCedula(request.getCedula());
-        if (request.getEdad() > 0) user.setEdad(request.getEdad());
+        if (request.getEdad() != null && request.getEdad() > 0) user.setEdad(request.getEdad());
+        if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber()); // NUEVO
+        if (request.getProfilePictureUrl() != null) user.setProfilePictureUrl(request.getProfilePictureUrl()); // NUEVO
 
         return userRepositoryPort.save(user);
     }

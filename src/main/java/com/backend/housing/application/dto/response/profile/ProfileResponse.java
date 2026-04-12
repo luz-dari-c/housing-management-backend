@@ -7,7 +7,6 @@ import lombok.Setter;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
 @Getter
 @Setter
 public class ProfileResponse {
@@ -19,6 +18,8 @@ public class ProfileResponse {
     private String email;
     private String cedula;
     private int edad;
+    private String phoneNumber; // NUEVO
+    private String profilePictureUrl; // NUEVO
     private boolean active;
     private Set<String> roles;
 
@@ -31,10 +32,9 @@ public class ProfileResponse {
         this.email = user.getEmail();
         this.cedula = user.getCedula();
         this.edad = user.getEdad();
+        this.phoneNumber = user.getPhoneNumber();
+        this.profilePictureUrl = user.getProfilePictureUrl();
         this.active = user.isActive();
         this.roles = user.getRoles().stream().map(role -> role.getName()).collect(Collectors.toSet());
     }
-
-
-
 }

@@ -1,17 +1,17 @@
 package com.backend.housing.infrastructure.web.controllers.users;
 
-import com.backend.housing.application.dto.request.profile.UpdateProfileRequest;
-import com.backend.housing.application.dto.response.profile.ProfileResponse;
-import com.backend.housing.domain.entity.users.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.backend.housing.application.dto.request.profile.UpdateProfileRequest;
+import com.backend.housing.application.dto.response.profile.ProfileResponse;
+import com.backend.housing.domain.entity.users.User;
 import com.backend.housing.domain.ports.in.profile.ProfileUseCase;
 
 import jakarta.validation.Valid;
@@ -28,8 +28,9 @@ public class ProfileController {
 
     private String getCurrentUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-            return ((UserDetails) authentication.getPrincipal()).getUsername();
+        if (authentication != null && authentication.isAuthenticated()) {
+            // El principal es el email directamente (String)
+            return authentication.getName();
         }
         throw new RuntimeException("Usuario no autenticado");
     }
