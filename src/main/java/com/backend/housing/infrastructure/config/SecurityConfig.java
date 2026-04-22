@@ -37,10 +37,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // PERMITIR OPTIONS PARA CORS
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         
-                        // Swagger/OpenAPI
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        
                         .requestMatchers(
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
@@ -50,27 +50,28 @@ public class SecurityConfig {
                                 "/swagger-resources/**",
                                 "/webjars/**"
                         ).permitAll()
-                        
-                        // AUTH ENDPOINTS (PÚBLICOS)
+
+                       
                         .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/verify-code").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
+
                         
-                        // Propiedades públicas (GET)
                         .requestMatchers(HttpMethod.GET, "/api/properties", "/api/properties/*", "/api/properties/search").permitAll()
+
                         
-                        // Imágenes (PÚBLICO)
                         .requestMatchers("/images/**").permitAll()
+
                         
-                        // 👇 PERFIL (REQUIERE AUTENTICACIÓN) 👇
                         .requestMatchers("/profile/**").authenticated()
+
                         
-                        // TODO LO DEMÁS REQUIERE AUTENTICACIÓN
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -84,7 +85,7 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(false);
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

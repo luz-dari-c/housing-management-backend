@@ -29,7 +29,7 @@ public class ProfileController {
     private String getCurrentUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            // El principal es el email directamente (String)
+            
             return authentication.getName();
         }
         throw new RuntimeException("Usuario no autenticado");

@@ -1,15 +1,14 @@
 package com.backend.housing.infrastructure.persistence.adapters.users;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Component;
-
 import com.backend.housing.domain.entity.users.User;
 import com.backend.housing.domain.ports.out.users.UserRepositoryPort;
 import com.backend.housing.infrastructure.persistence.mappers.users.UserMapper;
 import com.backend.housing.infrastructure.persistence.repositories.users.UserJpaRepository;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class UserRepositoryAdapter implements UserRepositoryPort {
@@ -30,6 +29,12 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     @Override
     public Optional<User> findByEmail(String email) {
         return userJpaRepository.findByEmail(email)
+                .map(UserMapper::toDomain);
+    }
+
+    @Override
+    public Optional<User> findByCedula(String cedula) {
+        return userJpaRepository.findByCedula(cedula)
                 .map(UserMapper::toDomain);
     }
 

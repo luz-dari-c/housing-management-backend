@@ -23,9 +23,21 @@ spring:
     init:
       mode: always
 
+ 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: imsharlok@gmail.com
+    password: vfgk gfek riwm lbjh
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 server:
   port: 8080
-
 
 logging:
   level:
@@ -36,7 +48,7 @@ logging:
     org.springframework.web: DEBUG
     com.backend.housing: DEBUG
 
-# Foto por defecto
+
 app:
   default-profile-picture: "https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=200"
 
