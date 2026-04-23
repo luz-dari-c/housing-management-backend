@@ -1,59 +1,63 @@
 package com.backend.housing.application.mapper.properties;
 
-import com.backend.housing.application.Commands.properties.CreatePropertyCommand;
-import com.backend.housing.application.dto.request.properties.AddressRequest;
-import com.backend.housing.application.dto.request.properties.CoordinatesRequest;
+import com.backend.housing.application.commands.properties.CreatePropertyCommand;
 import com.backend.housing.application.dto.request.properties.CreatePropertyRequest;
 import com.backend.housing.domain.entity.properties.valueObjects.Address;
 import com.backend.housing.domain.entity.properties.valueObjects.Coordinates;
+import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class PropertyRequestMapper {
 
-    private Coordinates mapCoordinates(CoordinatesRequest request) {
-        if (request == null) return null;
+    private Coordinates mapCoordinates(Coordinates coordinates) {
+        if (coordinates == null) return null;
 
         return new Coordinates(
-                request.getLongitude(),
-                request.getLatitude()
+                coordinates.getLongitud(),
+                coordinates.getLatitud()
         );
     }
 
-    private Address mapAddress(AddressRequest request){
-        if (request == null) return null;
+    private Address mapAddress(Address address) {
+        if (address == null) return null;
 
         return new Address(
-                request.getStreet(),
-                request.getState(),
-                request.getCity(),
-                request.getCountry(),
-                request.getPostalCode()
+                address.getStreet(),
+                address.getCity(),
+                address.getState(),
+                address.getCountry(),
+                address.getPostalCode()
         );
     }
 
-    public CreatePropertyCommand toCommand(CreatePropertyRequest request) {
+    public CreatePropertyCommand toCommand(CreatePropertyRequest request,
+                                           PropertyId propertyId,
+                                           List<String> imageUrls) {
+        if (request == null) return null;
 
         Coordinates coordinates = mapCoordinates(request.getCoordinates());
         Address address = mapAddress(request.getAddress());
 
         return new CreatePropertyCommand(
-                request.getOwnerId(),
+                propertyId,
                 request.getTitle(),
                 request.getDescription(),
                 coordinates,
-                request.getSalePrice(),
-                request.getRentPrice(),
+                request.getTransactionType(),
+                request.getPriceAmount(),
                 request.getTypeProperty(),
                 null,
-                request.getImageUrls(),
+                imageUrls,
                 request.getNumberOfBedrooms(),
                 request.getNumberOfBathrooms(),
                 request.getAreaInSquareMeters(),
-                request.isPetsAllowed(),
-                address,
-                request.isFurnished(),
-                request.getRentType()
+                request.getPetsAllowed(),
+                request.getFurnished(),
+                request.getPaymentFrequency(),
+                address
         );
     }
 }

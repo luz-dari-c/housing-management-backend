@@ -1,9 +1,8 @@
 package com.backend.housing.infrastructure.persistence.entities.properties;
 
-
-import com.backend.housing.domain.entity.properties.RentType;
-import com.backend.housing.domain.entity.properties.TypeProperty;
-import com.backend.housing.domain.entity.properties.PropertyStatus;
+import com.backend.housing.domain.entity.properties.enums.PaymentFrequency;
+import com.backend.housing.domain.entity.properties.enums.TypeProperty;
+import com.backend.housing.domain.entity.properties.enums.PropertyStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +12,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -21,7 +21,7 @@ import java.util.List;
 public class PropertyEntity {
 
     @Id
-    private Long propertyId;
+    private UUID propertyId;
 
     @Column(nullable = false)
     private String title;
@@ -74,15 +74,16 @@ public class PropertyEntity {
     @Column(name = "area_square_meters")
     private Integer areaInSquareMeters;
 
-    @Column(name = "pets_allowed", nullable = false)
-    private boolean petsAllowed;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_frequency")
+    private PaymentFrequency paymentFrequency;
 
-    @Column(name = "furnished", nullable = false)
-    private boolean furnished;
+    @Column(name = "pets_allowed")
+    private Boolean petsAllowed;
+
+    @Column(name = "furnished")
+    private Boolean furnished;
 
     @Embedded
     private AddressEmbeddable address;
-
-    @Column(name = "rent_type")
-    private RentType rentType;
 }

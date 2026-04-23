@@ -1,7 +1,7 @@
 package com.backend.housing.application.dto.request.properties;
 
-import com.backend.housing.domain.entity.properties.RentType;
-import com.backend.housing.domain.entity.properties.TypeProperty;
+import com.backend.housing.domain.entity.properties.enums.RentModality;
+import com.backend.housing.domain.entity.properties.enums.TypeProperty;
 import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
@@ -18,7 +18,6 @@ public class SearchPropertyRequest {
 
     private TypeProperty typeProperty;
 
-    private RentType rentType;
 
     private Integer bedrooms;
     private Boolean petsAllowed;
@@ -40,10 +39,6 @@ public class SearchPropertyRequest {
 
     public TypeProperty getTypeProperty() {
         return typeProperty;
-    }
-
-    public RentType getRentType() {
-        return rentType;
     }
 
     public Integer getBedrooms() {

@@ -1,6 +1,6 @@
 package com.backend.housing.infrastructure.persistence.specifications;
 
-import com.backend.housing.domain.entity.properties.PropertyStatus;
+import com.backend.housing.domain.entity.properties.enums.PropertyStatus;
 import com.backend.housing.domain.entity.properties.valueObjects.SearchPropertyQuery;
 import com.backend.housing.infrastructure.persistence.entities.properties.PropertyEntity;
 import org.springframework.data.jpa.domain.Specification;
@@ -55,14 +55,7 @@ public class PropertySpecification {
                 );
             }
 
-            if (query.hasRentType()) {
-                predicates.add(
-                        cb.equal(
-                                root.get("rentType"),
-                                query.getRentType()
-                        )
-                );
-            }
+
 
             if (query.hasBedrooms()) {
                 predicates.add(

@@ -3,12 +3,12 @@ package com.backend.housing.infrastructure.persistence.adapters.properties;
 
 
 import com.backend.housing.domain.entity.properties.Property;
-import com.backend.housing.domain.ports.out.PropertySearchRepository;
+import com.backend.housing.domain.ports.out.properties.PropertySearchRepository;
 import com.backend.housing.domain.entity.properties.valueObjects.SearchPropertyQuery;
 import com.backend.housing.infrastructure.persistence.entities.properties.PropertyEntity;
 import com.backend.housing.infrastructure.persistence.repositories.properties.JpaPropertyRepository;
 import com.backend.housing.infrastructure.persistence.specifications.PropertySpecification;
-import com.backend.housing.infrastructure.persistence.mappers.PropertyEntityMapper;
+import com.backend.housing.infrastructure.persistence.mappers.properties.PropertyEntityMapper;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;

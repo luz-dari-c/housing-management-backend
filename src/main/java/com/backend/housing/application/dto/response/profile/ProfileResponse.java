@@ -1,0 +1,40 @@
+package com.backend.housing.application.dto.response.profile;
+
+import com.backend.housing.domain.entity.users.User;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+
+
+@Getter
+@Setter
+public class ProfileResponse {
+    private Long id;
+    private String primerNombre;
+    private String segundoNombre;
+    private String primerApellido;
+    private String segundoApellido;
+    private String email;
+    private String cedula;
+    private int edad;
+    private boolean active;
+    private Set<String> roles;
+
+    public ProfileResponse(User user) {
+        this.id = user.getId();
+        this.primerNombre = user.getPrimerNombre();
+        this.segundoNombre = user.getSegundoNombre();
+        this.primerApellido = user.getPrimerApellido();
+        this.segundoApellido = user.getSegundoApellido();
+        this.email = user.getEmail();
+        this.cedula = user.getCedula();
+        this.edad = user.getEdad();
+        this.active = user.isActive();
+        this.roles = user.getRoles().stream().map(role -> role.getName()).collect(Collectors.toSet());
+    }
+
+
+
+}

@@ -1,8 +1,8 @@
 package com.backend.housing.domain.entity.properties.valueObjects;
 
 
-import com.backend.housing.domain.entity.properties.RentType;
-import com.backend.housing.domain.entity.properties.TypeProperty;
+import com.backend.housing.domain.entity.properties.enums.RentModality;
+import com.backend.housing.domain.entity.properties.enums.TypeProperty;
 
 import java.math.BigDecimal;
 
@@ -13,7 +13,6 @@ public class SearchPropertyQuery {
     private BigDecimal minPrice;
     private BigDecimal maxPrice;
     private TypeProperty typeProperty;
-    private RentType rentType;
     private Integer bedrooms;
     private Boolean petsAllowed;
     private Boolean furnished;
@@ -23,7 +22,6 @@ public class SearchPropertyQuery {
             BigDecimal minPrice,
             BigDecimal maxPrice,
             TypeProperty typeProperty,
-            RentType rentType,
             Integer bedrooms,
             Boolean petsAllowed,
             Boolean furnished
@@ -32,7 +30,6 @@ public class SearchPropertyQuery {
         this.minPrice = minPrice;
         this.maxPrice = maxPrice;
         this.typeProperty = typeProperty;
-        this.rentType = rentType;
         this.bedrooms = bedrooms;
         this.petsAllowed = petsAllowed;
         this.furnished = furnished;
@@ -54,9 +51,6 @@ public class SearchPropertyQuery {
         return typeProperty;
     }
 
-    public RentType getRentType() {
-        return rentType;
-    }
 
     public Integer getBedrooms() {
         return bedrooms;
@@ -88,9 +82,6 @@ public class SearchPropertyQuery {
         return typeProperty != null;
     }
 
-    public boolean hasRentType() {
-        return rentType != null;
-    }
 
     public boolean hasBedrooms() {
         return bedrooms != null;
