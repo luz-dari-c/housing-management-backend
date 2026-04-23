@@ -14,7 +14,7 @@ public class ContractEntityMapper {
 
     public RentalContractEntity toEntity(RentalContract domain) {
         return new RentalContractEntity(
-                domain.getId() != null ? domain.getId().getValue() : null,
+                domain.getId().isEmpty() ? null : domain.getId().getValue(),
                 domain.getPropertyId().getValue(),
                 domain.getTenantId(),
                 domain.getOwnerId(),
@@ -23,7 +23,9 @@ public class ContractEntityMapper {
                 domain.getMonthlyRent().getAmount(),
                 domain.getStatus().name(),
                 domain.getCreatedAt(),
-                domain.getTerminatedAt()
+                domain.getTerminatedAt(),
+                domain.getActualStartDate(),
+                domain.getPaymentDueDate()
         );
     }
 
@@ -44,7 +46,9 @@ public class ContractEntityMapper {
                 monthlyRent,
                 status,
                 entity.getCreatedAt(),
-                entity.getTerminatedAt()
+                entity.getTerminatedAt(),
+                entity.getActualStartDate(),
+                entity.getPaymentDueDate()
         );
     }
 }

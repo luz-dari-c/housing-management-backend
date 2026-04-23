@@ -1,12 +1,12 @@
 package com.backend.housing.domain.entity.rentalcontracts;
 
-import com.backend.housing.domain.entity.properties.enums.PaymentFrequency;
 import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 import com.backend.housing.domain.entity.rentalcontracts.Enums.ContractStatus;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.ContractId;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.DateRange;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.MonthlyRent;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -23,6 +23,12 @@ public class RentalContract {
     private final LocalDateTime createdAt;
     private LocalDateTime terminatedAt;
 
+
+    private LocalDate actualStartDate;
+
+
+    private LocalDate paymentDueDate;
+
     private RentalContract(ContractId id,
                            PropertyId propertyId,
                            Long tenantId,
@@ -31,9 +37,11 @@ public class RentalContract {
                            MonthlyRent monthlyRent,
                            ContractStatus status,
                            LocalDateTime createdAt,
-                           LocalDateTime terminatedAt) {
+                           LocalDateTime terminatedAt,
+                           LocalDate actualStartDate,
+                           LocalDate paymentDueDate) {
 
-        this.id = Objects.requireNonNull(id);
+        this.id =id;
         this.propertyId = Objects.requireNonNull(propertyId);
         this.tenantId = Objects.requireNonNull(tenantId);
         this.ownerId = Objects.requireNonNull(ownerId);
@@ -42,6 +50,8 @@ public class RentalContract {
         this.status = Objects.requireNonNull(status);
         this.createdAt = Objects.requireNonNull(createdAt);
         this.terminatedAt = terminatedAt;
+        this.actualStartDate = actualStartDate;
+        this.paymentDueDate = paymentDueDate;
 
         validateUsers();
     }
@@ -53,14 +63,16 @@ public class RentalContract {
                                         MonthlyRent monthlyRent) {
 
         return new RentalContract(
-                ContractId.generate(),
+                ContractId.empty(),
                 propertyId,
                 tenantId,
                 ownerId,
                 period,
                 monthlyRent,
-                ContractStatus.ACTIVE,
+                ContractStatus.PAYMENT_PENDING,
                 LocalDateTime.now(),
+                null,
+                null,
                 null
         );
     }
@@ -73,7 +85,9 @@ public class RentalContract {
                                               MonthlyRent monthlyRent,
                                               ContractStatus status,
                                               LocalDateTime createdAt,
-                                              LocalDateTime terminatedAt) {
+                                              LocalDateTime terminatedAt,
+                                              LocalDate actualStartDate,
+                                              LocalDate paymentDueDate) {
 
         return new RentalContract(
                 id,
@@ -84,34 +98,65 @@ public class RentalContract {
                 monthlyRent,
                 status,
                 createdAt,
-                terminatedAt
+                terminatedAt,
+                actualStartDate,
+                paymentDueDate
         );
     }
 
-    private void validateUsers() {
-        if (tenantId.equals(ownerId)) {
-            throw new IllegalArgumentException();
+     public void activate(LocalDate paymentConfirmedDate) {
+        if (status != ContractStatus.PAYMENT_PENDING) {
+            throw new IllegalStateException("Contract cannot be activated from status: " + status);
         }
+        this.status = ContractStatus.ACTIVE;
+        this.actualStartDate = paymentConfirmedDate;
+        this.paymentDueDate = paymentConfirmedDate.plusMonths(1);
     }
 
-    public void terminate() {
+    public void renewPaymentPeriod(LocalDate newPaymentConfirmedDate) {
         if (status != ContractStatus.ACTIVE) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Only active contracts can renew payment period");
+        }
+        this.paymentDueDate = newPaymentConfirmedDate.plusMonths(1);
+    }
+
+    public void requestCancellation() {
+        if (status != ContractStatus.ACTIVE) {
+            throw new IllegalStateException("Only active contracts can request cancellation");
+        }
+        this.status = ContractStatus.CANCELLATION_PENDING;
+    }
+
+    public void cancel() {
+        if (status != ContractStatus.CANCELLATION_PENDING) {
+            throw new IllegalStateException("Contract must be in CANCELLATION_PENDING to be cancelled");
+        }
+        this.status = ContractStatus.CANCELLED;
+        this.terminatedAt = LocalDateTime.now();
+    }
+ public void terminate() {
+        if (status != ContractStatus.ACTIVE) {
+            throw new IllegalStateException("Only active contracts can be terminated");
         }
         this.status = ContractStatus.TERMINATED;
         this.terminatedAt = LocalDateTime.now();
     }
 
-    public void cancel() {
-        if (status != ContractStatus.ACTIVE) {
-            throw new IllegalStateException();
+     public void expire() {
+        if (status != ContractStatus.ACTIVE && status != ContractStatus.CANCELLATION_PENDING) {
+            throw new IllegalStateException("Contract cannot expire from status: " + status);
         }
-        this.status = ContractStatus.CANCELLED;
+        this.status = ContractStatus.EXPIRED;
         this.terminatedAt = LocalDateTime.now();
     }
 
     public boolean isActive() {
         return status == ContractStatus.ACTIVE && period.isActive();
+    }
+
+    public boolean requiresPayment() {
+        return (status == ContractStatus.ACTIVE || status == ContractStatus.CANCELLATION_PENDING)
+                && period.isActive();
     }
 
     public boolean belongsToTenant(Long userId) {
@@ -120,6 +165,12 @@ public class RentalContract {
 
     public boolean belongsToOwner(Long userId) {
         return this.ownerId.equals(userId);
+    }
+
+    private void validateUsers() {
+        if (tenantId.equals(ownerId)) {
+            throw new IllegalArgumentException("Tenant and owner cannot be the same user");
+        }
     }
 
     public ContractId getId() { return id; }
@@ -131,6 +182,8 @@ public class RentalContract {
     public ContractStatus getStatus() { return status; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getTerminatedAt() { return terminatedAt; }
+    public LocalDate getActualStartDate() { return actualStartDate; }
+    public LocalDate getPaymentDueDate() { return paymentDueDate; }
 
     @Override
     public boolean equals(Object o) {

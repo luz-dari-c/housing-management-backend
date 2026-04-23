@@ -30,26 +30,21 @@ public class CreateRentalRequestService implements CreateRentalRequestUseCase {
     @Override
     public RentalRequest create(CreateRentalRequestCommand command) {
 
-        // 1️⃣ Validar que el usuario existe
         if (!userService.userExists(command.getTenantId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El usuario (tenant) no existe");
         }
 
-        // 2️⃣ Obtener propiedad
         Property property = propertyService.getPropertyBasicInfo(command.getPropertyId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "La propiedad no fue encontrada"));
 
-        // 3️⃣ Validar que el tenant no sea el dueño
         if (property.getOwnerId().equals(command.getTenantId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes solicitar arriendo de tu propia propiedad");
         }
 
-        // 4️⃣ Validar disponibilidad
         if (!property.isAvailableForRent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La propiedad no está disponible para arriendo");
         }
 
-        // 5️⃣ Validar fechas
         DateRange period;
         try {
             period = DateRange.of(command.getStartDate(), command.getEndDate());
@@ -57,7 +52,6 @@ public class CreateRentalRequestService implements CreateRentalRequestUseCase {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rango de fechas inválido: " + e.getMessage());
         }
 
-        // 6️⃣ Crear solicitud
         RentalRequest request = RentalRequest.create(
                 command.getPropertyId(),
                 command.getTenantId(),
@@ -66,7 +60,6 @@ public class CreateRentalRequestService implements CreateRentalRequestUseCase {
                 command.getProposedRent()
         );
 
-        // 7️⃣ Guardar en repositorio
         return repository.save(request);
     }
 }

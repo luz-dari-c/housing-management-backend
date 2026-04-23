@@ -25,7 +25,6 @@ public class GetRentalRequestService implements GetRentalRequestUseCase {
         RentalRequest request = rentalRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Rental request not found"));
 
-        // Validación de que el usuario es dueño o arrendatario
         if (!request.getOwnerId().equals(userId) && !request.getTenantId().equals(userId)) {
             throw new RuntimeException("Usuario no autorizado para ver esta solicitud");
         }

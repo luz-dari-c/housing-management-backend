@@ -10,6 +10,7 @@ import com.backend.housing.domain.ports.out.properties.PropertyRepository;
 import com.backend.housing.domain.ports.out.rentalcontracts.RentalContractRepository;
 import com.backend.housing.domain.ports.out.rentalcontracts.RentalRequestRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
@@ -20,6 +21,7 @@ public class AcceptRentalRequestService implements AcceptRentalRequestUseCase {
     private final PropertyRepository propertyRepository;
     private final RentalContractRepository rentalContractRepository;
 
+
     public AcceptRentalRequestService(RentalRequestRepository rentalRequestRepository,
                                       PropertyRepository propertyRepository,
                                       RentalContractRepository rentalContractRepository) {
@@ -28,8 +30,9 @@ public class AcceptRentalRequestService implements AcceptRentalRequestUseCase {
         this.rentalContractRepository = rentalContractRepository;
     }
 
+    @Transactional
     @Override
-    public void execute(RequestId requestId, Long ownerId) {
+    public RentalContract execute(RequestId requestId, Long ownerId) {
 
         RentalRequest request = rentalRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Rental request not found"));
@@ -49,29 +52,26 @@ public class AcceptRentalRequestService implements AcceptRentalRequestUseCase {
             throw new RuntimeException("Property is not available for rent");
         }
 
-        //  Aceptar solicitud
         request.accept();
         rentalRequestRepository.save(request);
 
-        //  Definir precio final (propuesta o precio de la propiedad)
         BigDecimal finalPrice = request.getProposedRent() != null
                 ? request.getProposedRent()
                 : property.getPriceAmount();
-
-        MonthlyRent monthlyRent = MonthlyRent.of(finalPrice);
 
         RentalContract contract = RentalContract.create(
                 property.getId(),
                 request.getTenantId(),
                 property.getOwnerId(),
                 request.getPeriod(),
-                monthlyRent
+                MonthlyRent.of(finalPrice)
         );
 
-        rentalContractRepository.save(contract);
+        RentalContract savedContract = rentalContractRepository.save(contract);
 
-        // Marcar propiedad como rentada
         property.markAsRented();
         propertyRepository.save(property);
+
+        return savedContract;
     }
 }

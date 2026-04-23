@@ -46,12 +46,18 @@ public class RentalContractEntity {
     @Column(name = "terminated_at")
     private LocalDateTime terminatedAt;
 
+    @Column(name = "actual_start_date")
+    private LocalDate actualStartDate;
+
+    @Column(name = "payment_due_date")
+    private LocalDate paymentDueDate;
+
     public RentalContractEntity() {}
 
     public RentalContractEntity(UUID id, UUID propertyId, Long tenantId, Long ownerId,
                                 LocalDate startDate, LocalDate endDate, BigDecimal monthlyRent,
-                                 String status,
-                                LocalDateTime createdAt, LocalDateTime terminatedAt) {
+                                String status, LocalDateTime createdAt, LocalDateTime terminatedAt,
+                                LocalDate actualStartDate, LocalDate paymentDueDate) {
         this.id = id;
         this.propertyId = propertyId;
         this.tenantId = tenantId;
@@ -62,5 +68,7 @@ public class RentalContractEntity {
         this.status = status;
         this.createdAt = createdAt;
         this.terminatedAt = terminatedAt;
+        this.actualStartDate = actualStartDate;
+        this.paymentDueDate = paymentDueDate;
     }
 }

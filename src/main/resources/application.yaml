@@ -40,3 +40,9 @@ supabase:
     url: ${SUPABASE_URL}
     key: ${SUPABASE_KEY}
     bucket: property-images
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+  success-url: http://localhost:3000/payment/success
+  cancel-url: http://localhost:3000/payment/cancel

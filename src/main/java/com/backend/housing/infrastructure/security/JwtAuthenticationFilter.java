@@ -30,17 +30,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
+        String requestPath = request.getRequestURI();
+        String method = request.getMethod();
+
+        System.out.println("[JWT Filter] " + method + " " + requestPath);
+        System.out.println("   Authorization Header: " + (header != null ? "Present" : "MISSING"));
 
         if (header == null || !header.startsWith("Bearer ")) {
+            System.out.println(" No valid Authorization header found. Passthrough.");
             filterChain.doFilter(request, response);
             return;
         }
 
         String token = header.substring(7);
+        System.out.println("Token extracted (length: " + token.length() + ")");
 
         try {
             String email = jwtService.extractEmail(token);
             List<String> roles = jwtService.extractRoles(token);
+
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
@@ -61,9 +69,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 );
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+            } else if (email == null) {
+                System.out.println(" Email is NULL after extraction");
+            } else {
+                System.out.println("Authentication already exists or email is null");
             }
 
         } catch (Exception e) {
+            System.out.println("JWT Validation Error: " + e.getMessage());
+            e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }

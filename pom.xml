@@ -113,6 +113,12 @@
 			<version>2.8.6</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.stripe</groupId>
+			<artifactId>stripe-java</artifactId>
+			<version>24.3.0</version>
+		</dependency>
+
 		<!-- Tests generales -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

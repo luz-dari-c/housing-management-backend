@@ -2,8 +2,10 @@ package com.backend.housing.infrastructure.web.controllers.rentalcontracts;
 
 import com.backend.housing.application.commands.rentalcontracts.CreateRentalRequestCommand;
 import com.backend.housing.application.dto.request.rentalcontracts.CreateRentalRequestRequest;
+import com.backend.housing.application.dto.response.rentalcontracts.AcceptRequestResponse;
 import com.backend.housing.application.dto.response.rentalcontracts.RentalRequestResponse;
 import com.backend.housing.application.mapper.rentalcontracts.RentalRequestMapper;
+import com.backend.housing.domain.entity.rentalcontracts.RentalContract;
 import com.backend.housing.domain.entity.rentalcontracts.RentalRequest;
 import com.backend.housing.domain.entity.users.User;
 import com.backend.housing.domain.ports.in.rentalcontracts.AcceptRentalRequestUseCase;
@@ -91,10 +93,14 @@ public class RentalRequestController {
 
     @Operation(summary = "Aceptar una solicitud")
     @PostMapping("/{id}/accept")
-    public ResponseEntity<Void> acceptRequest(@PathVariable String id) {
+    public ResponseEntity<AcceptRequestResponse> acceptRequest(@PathVariable String id) {
         User user = getAuthenticatedUser();
-        acceptRentalRequestUseCase.execute(rentalRequestMapper.toRequestId(id), user.getId());
-        return ResponseEntity.noContent().build();
+        RentalContract contract = acceptRentalRequestUseCase.execute(
+                rentalRequestMapper.toRequestId(id),
+                user.getId()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new AcceptRequestResponse(contract.getId().getValue()));
     }
 
     @Operation(summary = "Rechazar una solicitud")
