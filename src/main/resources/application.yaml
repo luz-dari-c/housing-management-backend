@@ -3,15 +3,12 @@ spring:
     name: housing
 
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASS}
+    url: jdbc:postgresql://ep-soft-breeze-aicyu3ti-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require
+    username: neondb_owner
+    password: npg_LUdo0XrRWbI7
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 5
-    properties:
-      sslmode: require
-      channelBinding: require
 
   jpa:
     hibernate:
@@ -26,6 +23,19 @@ spring:
     init:
       mode: always
 
+ 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: imsharlok@gmail.com
+    password: vfgk gfek riwm lbjh
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 server:
   port: 8080
 
@@ -34,6 +44,13 @@ logging:
     root: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    com.backend.housing: DEBUG
+
+
+app:
+  default-profile-picture: "https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=200"
 
 supabase:
 
@@ -46,3 +63,6 @@ stripe:
   webhook-secret: ${STRIPE_WEBHOOK_SECRET}
   success-url: http://localhost:3000/payment/success
   cancel-url: http://localhost:3000/payment/cancel
+  url: ${SUPABASE_URL:http://localhost:54321}
+  key: ${SUPABASE_KEY:default-key}
+  bucket: property-images

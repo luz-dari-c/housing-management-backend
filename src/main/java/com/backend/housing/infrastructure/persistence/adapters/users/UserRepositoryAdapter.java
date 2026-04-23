@@ -33,6 +33,12 @@ public class UserRepositoryAdapter implements UserRepositoryPort {
     }
 
     @Override
+    public Optional<User> findByCedula(String cedula) {
+        return userJpaRepository.findByCedula(cedula)
+                .map(UserMapper::toDomain);
+    }
+
+    @Override
     public Optional<User> findById(Long id) {
         return userJpaRepository.findById(id)
                 .map(UserMapper::toDomain);

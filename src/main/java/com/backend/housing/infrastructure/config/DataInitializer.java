@@ -67,7 +67,7 @@ public class DataInitializer implements CommandLineRunner {
             testUser.setEmail(testEmail);
             testUser.setPassword(passwordEncoder.encode("Test123!"));
             testUser.setActive(true);
-            testUser.setRoles(Set.of(userRole));
+            testUser.setRol(Set.of(userRole));
 
             userRepositoryPort.save(testUser);
             System.out.println("Usuario de prueba creado: " + testEmail + " / Test123!");

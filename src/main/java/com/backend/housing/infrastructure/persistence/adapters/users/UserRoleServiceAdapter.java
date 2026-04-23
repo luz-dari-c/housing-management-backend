@@ -168,7 +168,7 @@ public class UserRoleServiceAdapter implements UserRoleServicePort {
         Set<Rol> roles = entity.getRoles().stream()
                 .map(roleEntity -> new Rol(roleEntity.getId(), roleEntity.getName()))
                 .collect(Collectors.toSet());
-        user.setRoles(roles);
+        user.setRol(roles);
 
         return user;
     }

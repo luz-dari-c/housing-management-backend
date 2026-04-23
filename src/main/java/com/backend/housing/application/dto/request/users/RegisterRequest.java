@@ -1,6 +1,5 @@
 package com.backend.housing.application.dto.request.users;
 
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -40,6 +39,7 @@ public class RegisterRequest {
     @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
     private String password;
 
-
-
+    // NUEVO CAMPO
+    @Size(min = 7, max = 10, message = "El número de teléfono debe tener entre 7 y 10 caracteres")
+    private String phoneNumber;
 }

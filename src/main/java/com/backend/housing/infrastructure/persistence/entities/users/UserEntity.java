@@ -1,56 +1,71 @@
 package com.backend.housing.infrastructure.persistence.entities.users;
 
-import jakarta.persistence.*;
-import java.util.HashSet;
 import java.util.Set;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
 public class UserEntity {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(nullable = false)
+    
+    @Column(name = "primer_nombre", nullable = false)
     private String primerNombre;
-
-    @Column(nullable = false)
+    
+    @Column(name = "segundo_nombre")
     private String segundoNombre;
-
-    @Column(nullable = false)
+    
+    @Column(name = "primer_apellido", nullable = false)
     private String primerApellido;
-
-    @Column(nullable = false)
+    
+    @Column(name = "segundo_apellido")
     private String segundoApellido;
-
+    
     @Column(unique = true, nullable = false)
     private String email;
-
+    
     @Column(unique = true, nullable = false)
     private String cedula;
-
+    
+    @Column(nullable = false)
+    private Integer edad;
+    
     @Column(nullable = false)
     private String password;
-
-    private boolean active;
-
+    
+    @Column(name = "phone_number") // NUEVO
+    private String phoneNumber;
+    
+    @Column(name = "profile_picture_url") // NUEVO
+    private String profilePictureUrl;
+    
     @Column(nullable = false)
-    private int edad;
-
+    private boolean active;
+    
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
+        name = "user_roles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<RolEntity> roles = new HashSet<>();
+    private Set<RolEntity> roles;
 
-    public UserEntity() {
-    }
+ 
+    public UserEntity() {}
 
-    // ===== GETTERS Y SETTERS =====
-
+ 
     public Long getId() {
         return id;
     }
@@ -107,6 +122,14 @@ public class UserEntity {
         this.cedula = cedula;
     }
 
+    public Integer getEdad() {
+        return edad;
+    }
+
+    public void setEdad(Integer edad) {
+        this.edad = edad;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -115,20 +138,28 @@ public class UserEntity {
         this.password = password;
     }
 
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getProfilePictureUrl() {
+        return profilePictureUrl;
+    }
+
+    public void setProfilePictureUrl(String profilePictureUrl) {
+        this.profilePictureUrl = profilePictureUrl;
+    }
+
     public boolean isActive() {
         return active;
     }
 
     public void setActive(boolean active) {
         this.active = active;
-    }
-
-    public int getEdad() {
-        return edad;
-    }
-
-    public void setEdad(int edad) {
-        this.edad = edad;
     }
 
     public Set<RolEntity> getRoles() {
