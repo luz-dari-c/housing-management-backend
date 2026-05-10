@@ -2,6 +2,7 @@ package com.backend.housing.application.services.rentalcontracts;
 
 import com.backend.housing.application.commands.rentalcontracts.CreateContractCommand;
 import com.backend.housing.domain.entity.properties.Property;
+import com.backend.housing.domain.entity.properties.enums.PaymentFrequency;
 import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 import com.backend.housing.domain.entity.rentalcontracts.RentalContract;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.DateRange;
@@ -49,12 +50,16 @@ public class CreateContractService implements CreateContractUseCase {
 
         MonthlyRent monthlyRent = resolveMonthlyRent(property, command);
 
+        PaymentFrequency paymentFrequency = property.getRentalTerms().getPaymentFrequency();
+
+
         RentalContract contract = RentalContract.create(
                 command.getPropertyId(),
                 command.getTenantId(),
                 owner.getId(),
                 period,
-                monthlyRent
+                monthlyRent,
+                paymentFrequency
         );
 
         RentalContract savedContract = contractRepository.save(contract);

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,4 +28,10 @@ public interface JpaRentalContractRepository extends JpaRepository<RentalContrac
 
     @Query("SELECT c FROM RentalContractEntity c WHERE c.status = 'ACTIVE'")
     List<RentalContractEntity> findAllActive();
+
+    // Contratos cuya cancelación programada ya venció — usados por el job nocturno
+    @Query("SELECT c FROM RentalContractEntity c " +
+            "WHERE c.status = 'CANCELLATION_PENDING' " +
+            "AND c.effectiveCancellationDate <= :date")
+    List<RentalContractEntity> findPendingCancellationsDue(@Param("date") LocalDate date);
 }

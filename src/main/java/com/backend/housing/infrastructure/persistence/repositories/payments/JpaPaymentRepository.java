@@ -1,5 +1,7 @@
 package com.backend.housing.infrastructure.persistence.repositories.payments;
 
+import com.backend.housing.domain.entity.payments.Payment;
+import com.backend.housing.domain.entity.payments.enums.PaymentStatus;
 import com.backend.housing.infrastructure.persistence.entities.payments.PaymentEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,5 +18,9 @@ public interface JpaPaymentRepository extends JpaRepository<PaymentEntity, UUID>
 
     Optional<PaymentEntity> findByCheckoutSessionId(String checkoutSessionId);
 
-    List<PaymentEntity> findByReferenceId(UUID referenceId);
+    boolean existsByReferenceIdAndPeriod(UUID referenceId, String period);
+
+    List<PaymentEntity> findByReferenceIdOrderByCreatedAtDesc(UUID referenceId);
+
+    Optional<PaymentEntity> findFirstByReferenceIdAndStatusOrderByCreatedAtDesc(UUID referenceId, PaymentStatus status);
 }

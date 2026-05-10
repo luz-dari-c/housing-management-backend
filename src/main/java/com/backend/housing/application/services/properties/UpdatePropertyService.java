@@ -9,8 +9,10 @@ import com.backend.housing.domain.exceptions.InvalidNotFoundException;
 import com.backend.housing.domain.ports.in.properties.UpdatePropertyUseCase;
 import com.backend.housing.domain.ports.out.properties.PropertyRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class UpdatePropertyService implements UpdatePropertyUseCase {
 
     private final PropertyRepository propertyRepository;
@@ -23,9 +25,13 @@ public class UpdatePropertyService implements UpdatePropertyUseCase {
     public Property update(UpdatePropertyCommand command) {
 
         Property property = propertyRepository.findById(command.getId())
-                .orElseThrow(() ->
-                        new InvalidNotFoundException("Property not found with id: " + command.getId())
-                );
+                .orElseThrow(() -> new InvalidNotFoundException(
+                        "Propiedad no encontrada: " + command.getId()
+                ));
+
+         if (!property.isOwnedBy(command.getRequestingUserId())) {
+            throw new SecurityException("No tienes permiso para editar esta propiedad");
+        }
 
         Price price = resolvePrice(command);
         RentalTerms rentalTerms = resolveRentalTerms(command, property);
@@ -58,18 +64,13 @@ public class UpdatePropertyService implements UpdatePropertyUseCase {
         if (command.getPriceAmount() == null || command.getTransactionType() == null) {
             return null;
         }
-
         if (command.getTransactionType() == TransactionType.SALE) {
             return Price.forSale(command.getPriceAmount());
         }
-
         return Price.forRent(command.getPriceAmount());
     }
 
-
-
     private RentalTerms resolveRentalTerms(UpdatePropertyCommand command, Property property) {
-
         if (command.getPetsAllowed() == null && command.getFurnished() == null) {
             return null;
         }

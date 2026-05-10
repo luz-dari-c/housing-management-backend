@@ -36,11 +36,13 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(auth -> auth
-                        // OPTIONS para CORS
+
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Swagger/OpenAPI
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
@@ -49,46 +51,39 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
 
-                        // Auth endpoints (públicos)
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
+                        .requestMatchers("/api/auth/register").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/verify-code").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
 
-                        // Webhook de pagos (público)
                         .requestMatchers("/api/payments/webhook").permitAll()
 
-                        // Notificaciones de prueba
                         .requestMatchers(HttpMethod.POST, "/api/notifications/test/expire").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/notifications/test/reminder").permitAll()
 
-                        // Propiedades públicas
-                        .requestMatchers(HttpMethod.GET, "/api/properties/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/properties").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/properties/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/properties/search").permitAll()
 
-                        // Imágenes
                         .requestMatchers("/images/**").permitAll()
 
-                        // Perfil (autenticado)
-                        .requestMatchers("/profile/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/rental-requests").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/rental-requests/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/rental-requests/**").authenticated()
 
-                        // Chat (autenticado)
-                        .requestMatchers("/chat/**").authenticated()
-
-                        // Rental requests (autenticado)
-                        .requestMatchers("/api/rental-requests/**").authenticated()
-
-                        // Payments (autenticado)
                         .requestMatchers(HttpMethod.GET, "/api/payments/receipt/*").authenticated()
 
-                        // Notifications (autenticado)
-                        .requestMatchers("/api/notifications/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/notifications").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/notifications/unread").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/notifications/unread/count").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/api/notifications/*/read").authenticated()
 
-                        // TODO LO DEMÁS
+                        .requestMatchers("/profile/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

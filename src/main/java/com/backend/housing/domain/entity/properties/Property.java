@@ -165,6 +165,34 @@ public class Property {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void delete() {
+        if (this.status == PropertyStatus.RENTED) {
+            throw new IllegalStateException(
+                    "No se puede eliminar una propiedad que tiene un contrato activo (RENTED)"
+            );
+        }
+        if (this.status == PropertyStatus.DELETED) {
+            throw new IllegalStateException("La propiedad ya está eliminada");
+        }
+        this.status = PropertyStatus.DELETED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void disable() {
+        if (this.status != PropertyStatus.PUBLISHED) {
+            throw new IllegalStateException(
+                    "Solo se pueden deshabilitar propiedades en estado PUBLISHED. Estado actual: " + this.status
+            );
+        }
+        this.status = PropertyStatus.CREATED;
+        this.publishedAt = null;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public boolean isOwnedBy(Long userId) {
+        return this.ownerId.equals(userId);
+    }
+
     public void markAsSold() {
         if (this.status != PropertyStatus.PUBLISHED) {
             throw new IllegalStateException();

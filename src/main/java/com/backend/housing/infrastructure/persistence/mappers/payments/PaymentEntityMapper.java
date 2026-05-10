@@ -21,7 +21,8 @@ public class PaymentEntityMapper {
                 domain.getCheckoutSessionId(),
                 domain.getCheckoutUrl(),
                 domain.getCreatedAt(),
-                domain.getPaidAt()
+                domain.getPaidAt(),
+                domain.getPeriod()
         );
     }
 
@@ -40,7 +41,8 @@ public class PaymentEntityMapper {
                 entity.getCreatedAt(),
                 entity.getPaidAt(),
                 entity.getCheckoutSessionId(),
-                entity.getCheckoutUrl()
+                entity.getCheckoutUrl(),
+                entity.getPeriod()
         );
     }
 }
