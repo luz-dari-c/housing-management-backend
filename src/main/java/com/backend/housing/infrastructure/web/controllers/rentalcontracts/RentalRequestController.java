@@ -8,10 +8,7 @@ import com.backend.housing.application.mapper.rentalcontracts.RentalRequestMappe
 import com.backend.housing.domain.entity.rentalcontracts.RentalContract;
 import com.backend.housing.domain.entity.rentalcontracts.RentalRequest;
 import com.backend.housing.domain.entity.users.User;
-import com.backend.housing.domain.ports.in.rentalcontracts.AcceptRentalRequestUseCase;
-import com.backend.housing.domain.ports.in.rentalcontracts.CreateRentalRequestUseCase;
-import com.backend.housing.domain.ports.in.rentalcontracts.GetRentalRequestUseCase;
-import com.backend.housing.domain.ports.in.rentalcontracts.RejectRentalRequestUseCase;
+import com.backend.housing.domain.ports.in.rentalcontracts.*;
 import com.backend.housing.domain.ports.out.properties.UserValidationPort;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,19 +33,21 @@ public class RentalRequestController {
     private final AcceptRentalRequestUseCase acceptRentalRequestUseCase;
     private final RejectRentalRequestUseCase rejectRentalRequestUseCase;
     private final UserValidationPort userValidationPort;
+    private final CancelRentalRequestUseCase cancelRentalRequestUseCase;
 
     public RentalRequestController(CreateRentalRequestUseCase createRentalRequestUseCase,
                                    GetRentalRequestUseCase getRentalRequestUseCase,
                                    RentalRequestMapper rentalRequestMapper,
                                    AcceptRentalRequestUseCase acceptRentalRequestUseCase,
                                    RejectRentalRequestUseCase rejectRentalRequestUseCase,
-                                   UserValidationPort userValidationPort) {
+                                   UserValidationPort userValidationPort, CancelRentalRequestUseCase cancelRentalRequestUseCase) {
         this.createRentalRequestUseCase = createRentalRequestUseCase;
         this.getRentalRequestUseCase = getRentalRequestUseCase;
         this.rentalRequestMapper = rentalRequestMapper;
         this.acceptRentalRequestUseCase = acceptRentalRequestUseCase;
         this.rejectRentalRequestUseCase = rejectRentalRequestUseCase;
         this.userValidationPort = userValidationPort;
+        this.cancelRentalRequestUseCase = cancelRentalRequestUseCase;
     }
 
     @Operation(summary = "Crear nueva solicitud de arriendo")
@@ -108,6 +107,14 @@ public class RentalRequestController {
     public ResponseEntity<Void> rejectRequest(@PathVariable String id) {
         User user = getAuthenticatedUser();
         rejectRentalRequestUseCase.execute(rentalRequestMapper.toRequestId(id), user.getId());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Cancelar una solicitud de arriendo enviada")
+    @DeleteMapping("/{id}/cancel")
+    public ResponseEntity<Void> cancelRentalRequest(@PathVariable String id) {
+        User user = getAuthenticatedUser();
+        cancelRentalRequestUseCase.execute(rentalRequestMapper.toRequestId(id), user.getId());
         return ResponseEntity.noContent().build();
     }
 

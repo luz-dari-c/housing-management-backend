@@ -16,5 +16,8 @@ public record PaymentReceiptResponse(
         PaymentMethod method,
         LocalDateTime createdAt,
         LocalDateTime paidAt,
-        String checkoutUrl
+        String checkoutUrl,
+        String tenantName,
+        String ownerName,
+        String propertyTitle  
 ) {}

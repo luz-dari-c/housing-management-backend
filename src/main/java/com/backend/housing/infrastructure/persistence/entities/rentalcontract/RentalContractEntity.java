@@ -52,12 +52,30 @@ public class RentalContractEntity {
     @Column(name = "payment_due_date")
     private LocalDate paymentDueDate;
 
+    @Column(name = "payment_frequency", nullable = false)
+    private String paymentFrequency;
+
+
+
+    @Column(name = "effective_cancellation_date")
+    private LocalDate effectiveCancellationDate;
+
     public RentalContractEntity() {}
 
-    public RentalContractEntity(UUID id, UUID propertyId, Long tenantId, Long ownerId,
-                                LocalDate startDate, LocalDate endDate, BigDecimal monthlyRent,
-                                String status, LocalDateTime createdAt, LocalDateTime terminatedAt,
-                                LocalDate actualStartDate, LocalDate paymentDueDate) {
+    public RentalContractEntity(UUID id,
+                                UUID propertyId,
+                                Long tenantId,
+                                Long ownerId,
+                                LocalDate startDate,
+                                LocalDate endDate,
+                                BigDecimal monthlyRent,
+                                String paymentFrequency,
+                                String status,
+                                LocalDateTime createdAt,
+                                LocalDateTime terminatedAt,
+                                LocalDate actualStartDate,
+                                LocalDate paymentDueDate,
+                                LocalDate effectiveCancellationDate) {
         this.id = id;
         this.propertyId = propertyId;
         this.tenantId = tenantId;
@@ -65,10 +83,12 @@ public class RentalContractEntity {
         this.startDate = startDate;
         this.endDate = endDate;
         this.monthlyRent = monthlyRent;
+        this.paymentFrequency = paymentFrequency;
         this.status = status;
         this.createdAt = createdAt;
         this.terminatedAt = terminatedAt;
         this.actualStartDate = actualStartDate;
         this.paymentDueDate = paymentDueDate;
+        this.effectiveCancellationDate = effectiveCancellationDate;
     }
 }

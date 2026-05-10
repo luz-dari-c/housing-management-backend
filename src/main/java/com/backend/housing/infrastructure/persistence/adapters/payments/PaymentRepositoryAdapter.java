@@ -1,6 +1,7 @@
 package com.backend.housing.infrastructure.persistence.adapters.payments;
 
 import com.backend.housing.domain.entity.payments.Payment;
+import com.backend.housing.domain.entity.payments.enums.PaymentStatus;
 import com.backend.housing.domain.entity.payments.valueobjects.PaymentId;
 import com.backend.housing.domain.ports.out.payments.PaymentRepository;
 import com.backend.housing.domain.valueobjects.Pagination;
@@ -85,5 +86,32 @@ public class PaymentRepositoryAdapter implements PaymentRepository {
                 jpaPaymentRepository.findByCheckoutSessionId(checkoutSessionId);
 
         return optionalEntity.map(mapper::toDomain);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean existsByReferenceIdAndPeriod(UUID referenceId, String period) {
+
+        return jpaPaymentRepository.existsByReferenceIdAndPeriod(referenceId, period);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Payment> findByReferenceIdOrderByCreatedAtDesc(UUID referenceId) {
+
+        return jpaPaymentRepository
+                .findByReferenceIdOrderByCreatedAtDesc(referenceId)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<Payment> findLatestSucceededByReferenceId(UUID referenceId) {
+
+        return jpaPaymentRepository
+                .findFirstByReferenceIdAndStatusOrderByCreatedAtDesc(referenceId, PaymentStatus.SUCCEEDED)
+                .map(mapper::toDomain);
     }
 }

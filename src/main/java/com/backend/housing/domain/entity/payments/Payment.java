@@ -21,6 +21,7 @@ public class Payment {
     private PaymentMethod method;
     private final LocalDateTime createdAt;
     private LocalDateTime paidAt;
+    private final String period;
 
     private String checkoutSessionId;
     private String checkoutUrl;
@@ -32,7 +33,8 @@ public class Payment {
                     String currency,
                     PaymentMethod method,
                     String checkoutSessionId,
-                    String checkoutUrl) {
+                    String checkoutUrl,
+                    String period) {
         this.id = id;
         this.referenceId = referenceId;
         this.referenceType = referenceType;
@@ -41,6 +43,7 @@ public class Payment {
         this.method = method;
         this.checkoutSessionId = checkoutSessionId;
         this.checkoutUrl = checkoutUrl;
+        this.period = period;
         this.status = PaymentStatus.PENDING;
         this.createdAt = LocalDateTime.now();
     }
@@ -51,7 +54,8 @@ public class Payment {
                                                     String currency,
                                                     PaymentMethod method,
                                                     String checkoutSessionId,
-                                                    String checkoutUrl) {
+                                                    String checkoutUrl,
+                                                    String period) {
 
         return new Payment(
                 PaymentId.generate(),
@@ -61,7 +65,8 @@ public class Payment {
                 currency,
                 method,
                 checkoutSessionId,
-                checkoutUrl
+                checkoutUrl,
+                period
         );
     }
 
@@ -75,7 +80,8 @@ public class Payment {
                     LocalDateTime createdAt,
                     LocalDateTime paidAt,
                     String checkoutSessionId,
-                    String checkoutUrl) {
+                    String checkoutUrl,
+                    String period) {
 
         this.id = id;
         this.referenceId = referenceId;
@@ -88,6 +94,7 @@ public class Payment {
         this.paidAt = paidAt;
         this.checkoutSessionId = checkoutSessionId;
         this.checkoutUrl = checkoutUrl;
+        this.period = period;
     }
 
     public static Payment reconstitute(
@@ -101,7 +108,8 @@ public class Payment {
             LocalDateTime createdAt,
             LocalDateTime paidAt,
             String checkoutSessionId,
-            String checkoutUrl
+            String checkoutUrl,
+            String period
 
     ){
         return new Payment(
@@ -115,7 +123,8 @@ public class Payment {
                 createdAt,
                 paidAt,
                 checkoutSessionId,
-                checkoutUrl
+                checkoutUrl,
+                period
         );
     }
 
@@ -154,4 +163,5 @@ public class Payment {
     public LocalDateTime getPaidAt() { return paidAt; }
     public String getCheckoutSessionId() { return checkoutSessionId; }
     public String getCheckoutUrl() { return checkoutUrl; }
+    public String getPeriod() { return period; }
 }

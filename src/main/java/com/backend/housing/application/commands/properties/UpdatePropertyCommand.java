@@ -29,6 +29,8 @@ public class UpdatePropertyCommand {
     private final Boolean petsAllowed;
     private final Boolean furnished;
     private final Address address;
+    private final Long requestingUserId;
+
 
     public UpdatePropertyCommand(
             PropertyId id,
@@ -45,7 +47,8 @@ public class UpdatePropertyCommand {
             Integer areaInSquareMeters,
             Boolean petsAllowed,
             Address address,
-            Boolean furnished
+            Boolean furnished,
+            Long requestingUserId
     ) {
 
         if (id == null) {
@@ -71,5 +74,8 @@ public class UpdatePropertyCommand {
         this.petsAllowed = petsAllowed;
         this.address = address;
         this.furnished = furnished;
+        this.requestingUserId = requestingUserId;
     }
+
+
 }

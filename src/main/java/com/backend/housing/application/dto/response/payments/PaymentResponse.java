@@ -11,18 +11,17 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Getter
-@Setter
-public class PaymentResponse {
 
-    private String paymentId;
-    private UUID referenceId;
-    private PaymentReferenceType referenceType;
-    private BigDecimal amount;
-    private String currency;
-    private PaymentStatus status;
-    private String providerPaymentId;
-    private String clientSecret;
-    private LocalDateTime createdAt;
+public record PaymentResponse (
 
+     String paymentId,
+     UUID referenceId,
+     PaymentReferenceType referenceType,
+     BigDecimal amount,
+     String currency,
+     PaymentStatus status,
+     String providerPaymentId,
+     String clientSecret,
+     LocalDateTime createdAt)
+{
 }

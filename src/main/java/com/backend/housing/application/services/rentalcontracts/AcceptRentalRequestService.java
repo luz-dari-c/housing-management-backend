@@ -1,6 +1,7 @@
 package com.backend.housing.application.services.rentalcontracts;
 
 import com.backend.housing.domain.entity.properties.Property;
+import com.backend.housing.domain.entity.properties.enums.PaymentFrequency;
 import com.backend.housing.domain.entity.rentalcontracts.RentalContract;
 import com.backend.housing.domain.entity.rentalcontracts.RentalRequest;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.MonthlyRent;
@@ -40,6 +41,9 @@ public class AcceptRentalRequestService implements AcceptRentalRequestUseCase {
         Property property = propertyRepository.findById(request.getPropertyId())
                 .orElseThrow(() -> new RuntimeException("Property not found"));
 
+        PaymentFrequency paymentFrequency = property.getRentalTerms().getPaymentFrequency();
+
+
         if (!property.getOwnerId().equals(ownerId)) {
             throw new RuntimeException("You are not the owner");
         }
@@ -64,7 +68,8 @@ public class AcceptRentalRequestService implements AcceptRentalRequestUseCase {
                 request.getTenantId(),
                 property.getOwnerId(),
                 request.getPeriod(),
-                MonthlyRent.of(finalPrice)
+                MonthlyRent.of(finalPrice),
+                paymentFrequency
         );
 
         RentalContract savedContract = rentalContractRepository.save(contract);

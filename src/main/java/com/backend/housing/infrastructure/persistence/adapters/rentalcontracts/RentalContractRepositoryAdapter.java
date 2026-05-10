@@ -10,6 +10,7 @@ import com.backend.housing.infrastructure.persistence.mappers.rentalcontracts.Co
 import com.backend.housing.infrastructure.persistence.repositories.rentalcontracts.JpaRentalContractRepository;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -74,6 +75,13 @@ public class RentalContractRepositoryAdapter implements RentalContractRepository
     @Override
     public List<RentalContract> findActiveContracts() {
         return jpaRepository.findAllActive().stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<RentalContract> findPendingCancellationsDue(LocalDate date) {
+        return jpaRepository.findPendingCancellationsDue(date).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }

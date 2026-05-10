@@ -8,14 +8,13 @@ import com.backend.housing.domain.entity.rentalcontracts.RentalContract;
 import com.backend.housing.domain.entity.rentalcontracts.Enums.ContractStatus;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.ContractId;
 import com.backend.housing.domain.events.ContractActivatedEvent;
+import com.backend.housing.domain.events.PaymentReceivedEvent;
 import com.backend.housing.domain.ports.in.payments.HandlePaymentWebhookUseCase;
 import com.backend.housing.domain.ports.out.payments.PaymentRepository;
 import com.backend.housing.domain.ports.out.rentalcontracts.RentalContractRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Service
 public class HandlePaymentWebhookService implements HandlePaymentWebhookUseCase {
@@ -36,48 +35,84 @@ public class HandlePaymentWebhookService implements HandlePaymentWebhookUseCase 
     @Transactional
     public void execute(HandlePaymentWebhookCommand command) {
 
-        Payment payment = paymentRepository.findByCheckoutSessionId(command.getCheckoutSessionId())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Payment not found for session: " + command.getCheckoutSessionId()));
+        Payment payment = getValidPayment(command);
 
         if (payment.getStatus() == PaymentStatus.SUCCEEDED) {
             return;
         }
 
-        if (payment.getStatus() != PaymentStatus.PENDING) {
-            throw new IllegalStateException(
-                    "Payment cannot be succeeded. Current status: " + payment.getStatus());
-        }
-
-        RentalContract contract = null;
-
-        if (payment.getReferenceType() == PaymentReferenceType.RENTAL) {
-            contract = activateRentalContract(payment.getReferenceId(), command.getPaymentConfirmedDate());
-        }
+        ensurePaymentIsPending(payment);
 
         payment.markAsSucceeded();
         paymentRepository.save(payment);
 
-        if (contract != null) {
-            eventPublisher.publishEvent(new ContractActivatedEvent(
-                    contract.getId(),
-                    contract.getTenantId(),
-                    contract.getOwnerId()
-            ));
+        if (payment.getReferenceType() != PaymentReferenceType.RENTAL) {
+            return;
+        }
+
+        RentalContract contract = getContract(payment);
+
+        processContractPayment(contract, payment, command);
+    }
+
+    private Payment getValidPayment(HandlePaymentWebhookCommand command) {
+        return paymentRepository.findByCheckoutSessionId(command.getCheckoutSessionId())
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Payment not found for session: " + command.getCheckoutSessionId()));
+    }
+
+    private void ensurePaymentIsPending(Payment payment) {
+        if (payment.getStatus() != PaymentStatus.PENDING) {
+            throw new IllegalStateException(
+                    "Payment cannot be succeeded. Current status: " + payment.getStatus());
         }
     }
 
-    private RentalContract activateRentalContract(UUID contractId, java.time.LocalDate confirmedDate) {
-        RentalContract contract = contractRepository.findById(ContractId.of(contractId))
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Rental contract not found: " + contractId));
+    private RentalContract getContract(Payment payment) {
+        return contractRepository.findById(
+                        ContractId.of(payment.getReferenceId()))
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Rental contract not found: " + payment.getReferenceId()));
+    }
 
-        if (contract.getStatus() != ContractStatus.PAYMENT_PENDING) {
+    private void processContractPayment(RentalContract contract,
+                                        Payment payment,
+                                        HandlePaymentWebhookCommand command) {
+
+        if (contract.getStatus() == ContractStatus.PAYMENT_PENDING) {
+
+            contract.activate(command.getPaymentConfirmedDate());
+            contractRepository.save(contract);
+
+            eventPublisher.publishEvent(
+                    new ContractActivatedEvent(
+                            contract.getId(),
+                            contract.getTenantId(),
+                            contract.getOwnerId()
+                    )
+            );
+
+        } else if (contract.getStatus() == ContractStatus.ACTIVE ||
+                contract.getStatus() == ContractStatus.CANCELLATION_PENDING) {
+
+            contract.renewPaymentPeriod(command.getPaymentConfirmedDate());
+            contractRepository.save(contract);
+
+            eventPublisher.publishEvent(
+                    new PaymentReceivedEvent(
+                            contract.getId(),
+                            contract.getTenantId(),
+                            contract.getOwnerId(),
+                            payment.getPeriod()
+                    )
+            );
+
+        } else {
             throw new IllegalStateException(
-                    "Contract is not in PAYMENT_PENDING. Current status: " + contract.getStatus());
+                    "Cannot process payment for contract with status: "
+                            + contract.getStatus());
         }
-
-        contract.activate(confirmedDate);
-        return contractRepository.save(contract);
     }
 }
