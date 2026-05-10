@@ -23,7 +23,6 @@ spring:
     init:
       mode: always
 
- 
   mail:
     host: smtp.gmail.com
     port: 587
@@ -48,21 +47,16 @@ logging:
     org.springframework.web: DEBUG
     com.backend.housing: DEBUG
 
-
 app:
   default-profile-picture: "https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=200"
 
 supabase:
-
-    url: ${SUPABASE_URL}
-    key: ${SUPABASE_KEY}
-    bucket: property-images
-
-stripe:
-  secret-key: ${STRIPE_SECRET_KEY}
-  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
-  success-url: http://localhost:3000/payment/success
-  cancel-url: http://localhost:3000/payment/cancel
   url: ${SUPABASE_URL:http://localhost:54321}
   key: ${SUPABASE_KEY:default-key}
   bucket: property-images
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY:sk_test_placeholder}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_placeholder}
+  success-url: http://localhost:3000/payment/success
+  cancel-url: http://localhost:3000/payment/cancel
