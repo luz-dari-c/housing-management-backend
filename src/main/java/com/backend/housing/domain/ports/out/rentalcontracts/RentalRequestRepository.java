@@ -18,4 +18,7 @@ public interface RentalRequestRepository {
     List<RentalRequest> findByOwnerId(Long ownerId);
 
     List<RentalRequest> findByTenantId(Long tenantId);
+
+    List<RentalRequest> findPendingByPropertyId(PropertyId propertyId);
+
 }

@@ -1,5 +1,6 @@
 package com.backend.housing.infrastructure.web.controllers.rentalcontracts;
 
+import com.backend.housing.application.commands.rentalcontracts.CancelContractCommand;
 import com.backend.housing.application.commands.rentalcontracts.CreateContractCommand;
 import com.backend.housing.application.commands.rentalcontracts.TerminateContractCommand;
 import com.backend.housing.application.dto.request.rentalcontracts.CreateContractRequest;
@@ -9,15 +10,19 @@ import com.backend.housing.domain.entity.properties.Property;
 import com.backend.housing.domain.entity.rentalcontracts.RentalContract;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.ContractId;
 import com.backend.housing.domain.entity.users.User;
+import com.backend.housing.domain.ports.in.rentalcontracts.CancelContractUseCase;
 import com.backend.housing.domain.ports.in.rentalcontracts.CreateContractUseCase;
 import com.backend.housing.domain.ports.in.rentalcontracts.GetContractUseCase;
 import com.backend.housing.domain.ports.in.rentalcontracts.TerminateContractUseCase;
 import com.backend.housing.domain.ports.out.external.PropertyServicePort;
 import com.backend.housing.domain.ports.out.properties.UserValidationPort;
+import com.backend.housing.infrastructure.pdf.RentalContractPdfGenerator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,19 +43,25 @@ public class RentalContractController {
     private final ContractMapper contractMapper;
     private final PropertyServicePort propertyService;
     private final UserValidationPort userValidationPort;
+    private final CancelContractUseCase cancelContractUseCase;
+    private final RentalContractPdfGenerator rentalContractPdfGenerator;
 
     public RentalContractController(CreateContractUseCase createContractUseCase,
                                     TerminateContractUseCase terminateContractUseCase,
                                     GetContractUseCase getContractUseCase,
                                     ContractMapper contractMapper,
                                     PropertyServicePort propertyService,
-                                    UserValidationPort userValidationPort) {
+                                    UserValidationPort userValidationPort,
+                                    CancelContractUseCase cancelContractUseCase,
+                                    RentalContractPdfGenerator rentalContractPdfGenerator) {
         this.createContractUseCase = createContractUseCase;
         this.terminateContractUseCase = terminateContractUseCase;
         this.getContractUseCase = getContractUseCase;
         this.contractMapper = contractMapper;
         this.propertyService = propertyService;
         this.userValidationPort = userValidationPort;
+        this.cancelContractUseCase = cancelContractUseCase;
+        this.rentalContractPdfGenerator = rentalContractPdfGenerator;
     }
 
     @Operation(summary = "Crear un nuevo contrato de arriendo")
@@ -154,6 +165,49 @@ public class RentalContractController {
 
         return ResponseEntity.ok(responses);
     }
+
+
+    @Operation(summary = "Cancelar un contrato de arriendo")
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<ContractResponse> cancelContract(@PathVariable UUID id) {
+
+        User user = getAuthenticatedUser();
+
+        CancelContractCommand command = new CancelContractCommand(ContractId.of(id), user.getId());
+        RentalContract contract = cancelContractUseCase.execute(command);
+
+        Property property = propertyService.getPropertyBasicInfo(contract.getPropertyId())
+                .orElseThrow(() -> new RuntimeException("Property not found"));
+
+        String tenantName = userValidationPort.getUserName(contract.getTenantId()).orElse("Unknown");
+        String ownerName  = userValidationPort.getUserName(contract.getOwnerId()).orElse("Unknown");
+
+        return ResponseEntity.ok(contractMapper.toResponse(contract, property, tenantName, ownerName));
+    }
+
+    @Operation(summary = "Descargar contrato en PDF")
+    @GetMapping("/{id}/pdf")
+    public ResponseEntity<byte[]> getContractPdf(@PathVariable UUID id) {
+        User user = getAuthenticatedUser();
+
+        RentalContract contract = getContractUseCase.getContract(ContractId.of(id), user.getId());
+
+        Property property = propertyService.getPropertyBasicInfo(contract.getPropertyId())
+                .orElseThrow(() -> new RuntimeException("Property not found"));
+
+        String tenantName = userValidationPort.getUserName(contract.getTenantId()).orElse("—");
+        String ownerName  = userValidationPort.getUserName(contract.getOwnerId()).orElse("—");
+
+        ContractResponse response = contractMapper.toResponse(contract, property, tenantName, ownerName);
+        byte[] pdf = rentalContractPdfGenerator.generate(response);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"contrato_" + id + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
+
 
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

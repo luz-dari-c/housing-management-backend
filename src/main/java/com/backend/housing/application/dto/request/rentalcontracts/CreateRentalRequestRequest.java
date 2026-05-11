@@ -16,7 +16,7 @@ public class CreateRentalRequestRequest {
     @NotBlank(message = "Property ID cannot be blank")
     private String propertyId;
 
-    @Positive(message = "Proposed rent must be positive")
+    @Positive(message  = "Proposed rent must be positive")
     private BigDecimal proposedRent;
 
     @NotNull(message = "Start date is required")

@@ -5,6 +5,7 @@ import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 import com.backend.housing.domain.entity.rentalcontracts.RentalContract;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.ContractId;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,4 +19,6 @@ public interface RentalContractRepository {
     Optional<RentalContract> findActiveByPropertyId(PropertyId propertyId);
     boolean existsActiveByPropertyId(PropertyId propertyId);
     List<RentalContract> findActiveContracts();
+    List<RentalContract> findPendingCancellationsDue(LocalDate date);
+
 }

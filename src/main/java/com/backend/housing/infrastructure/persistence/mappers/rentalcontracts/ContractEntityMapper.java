@@ -1,5 +1,6 @@
 package com.backend.housing.infrastructure.persistence.mappers.rentalcontracts;
 
+import com.backend.housing.domain.entity.properties.enums.PaymentFrequency;
 import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 import com.backend.housing.domain.entity.rentalcontracts.Enums.ContractStatus;
 import com.backend.housing.domain.entity.rentalcontracts.RentalContract;
@@ -21,11 +22,13 @@ public class ContractEntityMapper {
                 domain.getPeriod().getStartDate(),
                 domain.getPeriod().getEndDate(),
                 domain.getMonthlyRent().getAmount(),
+                domain.getPaymentFrequency().name(),
                 domain.getStatus().name(),
                 domain.getCreatedAt(),
                 domain.getTerminatedAt(),
                 domain.getActualStartDate(),
-                domain.getPaymentDueDate()
+                domain.getPaymentDueDate(),
+                domain.getEffectiveCancellationDate()
         );
     }
 
@@ -36,6 +39,8 @@ public class ContractEntityMapper {
         DateRange period = DateRange.of(entity.getStartDate(), entity.getEndDate());
         MonthlyRent monthlyRent = MonthlyRent.of(entity.getMonthlyRent());
         ContractStatus status = ContractStatus.valueOf(entity.getStatus());
+        PaymentFrequency paymentFrequency =
+                PaymentFrequency.valueOf(entity.getPaymentFrequency());
 
         return RentalContract.reconstitute(
                 contractId,
@@ -44,11 +49,13 @@ public class ContractEntityMapper {
                 entity.getOwnerId(),
                 period,
                 monthlyRent,
+                paymentFrequency,
                 status,
                 entity.getCreatedAt(),
                 entity.getTerminatedAt(),
                 entity.getActualStartDate(),
-                entity.getPaymentDueDate()
+                entity.getPaymentDueDate(),
+                entity.getEffectiveCancellationDate()
         );
     }
 }

@@ -17,4 +17,11 @@ public interface PaymentRepository {
     List<Payment> findByReferenceId(UUID referenceId, Pagination pagination);
 
     Optional<Payment> findByCheckoutSessionId(String checkoutSessionId);
+
+    boolean existsByReferenceIdAndPeriod(UUID referenceId, String period);
+
+    List <Payment> findByReferenceIdOrderByCreatedAtDesc(UUID referenceId);
+
+    Optional<Payment> findLatestSucceededByReferenceId(UUID referenceId);
+
 }

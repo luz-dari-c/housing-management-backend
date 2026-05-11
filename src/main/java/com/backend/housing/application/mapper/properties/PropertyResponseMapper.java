@@ -3,10 +3,12 @@ package com.backend.housing.application.mapper.properties;
 import com.backend.housing.application.dto.response.properties.CreatePropertyResponse;
 import com.backend.housing.application.dto.response.properties.PropertyDetailResponse;
 import com.backend.housing.application.dto.response.properties.PropertySummaryResponse;
+import com.backend.housing.application.dto.response.properties.UpdatePropertyResponse;
 import com.backend.housing.domain.entity.properties.Property;
 import com.backend.housing.domain.entity.properties.valueObjects.RentalTerms;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,5 +79,50 @@ public class PropertyResponseMapper {
         return properties.stream()
                 .map(this::toSummaryResponse)
                 .collect(Collectors.toList());
+    }
+
+
+    public UpdatePropertyResponse toUpdateResponse(Property property) {
+
+        String street = null, city = null, state = null, country = null, postalCode = null;
+        if (property.getAddress() != null) {
+            street     = property.getAddress().getStreet();
+            city       = property.getAddress().getCity();
+            state      = property.getAddress().getState();
+            country    = property.getAddress().getCountry();
+            postalCode = property.getAddress().getPostalCode();
+        }
+
+        BigDecimal latitude = null, longitude = null;
+        if (property.getCoordinates() != null) {
+            latitude  = property.getCoordinates().getLatitud();
+            longitude = property.getCoordinates().getLongitud();
+        }
+
+        Boolean petsAllowed = null;
+        Boolean furnished   = null;
+        if (property.getRentalTerms() != null) {
+            petsAllowed = property.getRentalTerms().isPetsAllowed();
+            furnished   = property.getRentalTerms().isFurnished();
+        }
+
+        return new UpdatePropertyResponse(
+                property.getId().getValue(),
+                property.getTitle(),
+                property.getDescription(),
+                property.getTransactionType(),
+                property.getPriceAmount(),
+                property.getTypeProperty(),
+                property.getStatus(),
+                property.getNumberOfBedrooms(),
+                property.getNumberOfBathrooms(),
+                property.getAreaInSquareMeters(),
+                petsAllowed,
+                furnished,
+                property.getImageUrls(),
+                street, city, state, country, postalCode,
+                latitude, longitude,
+                property.getUpdatedAt()
+        );
     }
 }

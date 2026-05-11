@@ -6,5 +6,5 @@ public enum PropertyStatus {
     SOLD,
     CREATED,
     DRAFT,
-    REMOVED
+    DELETED
 }

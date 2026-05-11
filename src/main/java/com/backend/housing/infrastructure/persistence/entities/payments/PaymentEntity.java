@@ -42,7 +42,6 @@ public class PaymentEntity {
     @Column(name = "method", nullable = false)
     private PaymentMethod method;
 
-    // NUEVOS CAMPOS para Stripe Checkout Session
     @Column(name = "checkout_session_id")
     private String checkoutSessionId;
 
@@ -55,6 +54,9 @@ public class PaymentEntity {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
+    @Column(name = "period", length = 20)
+    private String period;
+
     public PaymentEntity(UUID id,
                          UUID referenceId,
                          PaymentReferenceType referenceType,
@@ -65,7 +67,8 @@ public class PaymentEntity {
                          String checkoutSessionId,
                          String checkoutUrl,
                          LocalDateTime createdAt,
-                         LocalDateTime paidAt) {
+                         LocalDateTime paidAt,
+                         String period) {
         this.id = id;
         this.referenceId = referenceId;
         this.referenceType = referenceType;
@@ -77,5 +80,6 @@ public class PaymentEntity {
         this.checkoutUrl = checkoutUrl;
         this.createdAt = createdAt;
         this.paidAt = paidAt;
+        this.period = period;
     }
 }

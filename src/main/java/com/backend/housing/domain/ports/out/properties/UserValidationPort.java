@@ -11,4 +11,5 @@ public interface UserValidationPort {
     Optional<User> findByEmail(String email);
     Optional<String> getUserName(Long userId);
 
+
 }
