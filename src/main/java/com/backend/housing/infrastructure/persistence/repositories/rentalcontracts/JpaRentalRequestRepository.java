@@ -16,11 +16,10 @@ public interface JpaRentalRequestRepository extends JpaRepository<RentalRequestE
 
     List<RentalRequestEntity> findByTenantId(Long tenantId);
 
-
     @Query("SELECT r FROM RentalRequestEntity r " +
             "WHERE r.propertyId = :propertyId " +
             "AND r.status = 'PENDING'")
     List<RentalRequestEntity> findPendingByPropertyId(
-            @Param("propertyId") UUID propertyId
+            @Param("propertyId") String propertyId
     );
 }

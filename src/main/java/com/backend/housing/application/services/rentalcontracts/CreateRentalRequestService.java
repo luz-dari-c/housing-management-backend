@@ -2,6 +2,7 @@ package com.backend.housing.application.services.rentalcontracts;
 
 import com.backend.housing.application.commands.rentalcontracts.CreateRentalRequestCommand;
 import com.backend.housing.domain.entity.properties.Property;
+import com.backend.housing.domain.entity.properties.enums.PaymentFrequency;
 import com.backend.housing.domain.entity.rentalcontracts.RentalRequest;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.DateRange;
 import com.backend.housing.domain.ports.in.rentalcontracts.CreateRentalRequestUseCase;
@@ -11,6 +12,8 @@ import com.backend.housing.domain.ports.out.rentalcontracts.RentalRequestReposit
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDate;
 
 @Service
 public class CreateRentalRequestService implements CreateRentalRequestUseCase {
@@ -31,7 +34,7 @@ public class CreateRentalRequestService implements CreateRentalRequestUseCase {
     public RentalRequest create(CreateRentalRequestCommand command) {
 
         if (!userService.userExists(command.getTenantId())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El usuario (tenant) no existe");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El usuario (arrendatario) no existe");
         }
 
         Property property = propertyService.getPropertyBasicInfo(command.getPropertyId())
@@ -45,9 +48,13 @@ public class CreateRentalRequestService implements CreateRentalRequestUseCase {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "La propiedad no está disponible para arriendo");
         }
 
+        PaymentFrequency frequency = property.getRentalTerms().getPaymentFrequency();
+
+        LocalDate endDate = calculateEndDate(command.getStartDate(), command.getDuration(), frequency);
+
         DateRange period;
         try {
-            period = DateRange.of(command.getStartDate(), command.getEndDate());
+            period = DateRange.of(command.getStartDate(), endDate);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rango de fechas inválido: " + e.getMessage());
         }
@@ -61,5 +68,13 @@ public class CreateRentalRequestService implements CreateRentalRequestUseCase {
         );
 
         return repository.save(request);
+    }
+
+    private LocalDate calculateEndDate(LocalDate startDate, Integer duration, PaymentFrequency frequency) {
+        return switch (frequency) {
+            case MONTHLY -> startDate.plusMonths(duration);
+            case BIWEEKLY -> startDate.plusDays(duration * 15L);
+            case WEEKLY -> startDate.plusWeeks(duration);
+        };
     }
 }

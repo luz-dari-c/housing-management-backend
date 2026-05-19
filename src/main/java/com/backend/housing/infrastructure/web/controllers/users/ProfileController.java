@@ -17,7 +17,7 @@ import com.backend.housing.domain.ports.in.profile.ProfileUseCase;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/profile")
+@RequestMapping("/api/profile")
 public class ProfileController {
 
     private final ProfileUseCase profileUseCase;

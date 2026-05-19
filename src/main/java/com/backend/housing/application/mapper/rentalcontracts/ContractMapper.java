@@ -42,7 +42,8 @@ public class ContractMapper {
                 contract.getPeriod().getEndDate(),
                 contract.getMonthlyRent().getAmount(),
                 contract.getStatus(),
-                contract.getCreatedAt()
+                contract.getCreatedAt(),
+                contract.getPaymentFrequency()
         );
     }
 }

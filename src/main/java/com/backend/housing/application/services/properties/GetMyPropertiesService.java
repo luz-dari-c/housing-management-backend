@@ -36,10 +36,13 @@ public class GetMyPropertiesService  implements GetMyPropertiesUseCase {
         Long ownerId = user.getId();
 
         if (status != null) {
+            if (status == PropertyStatus.DELETED) {
+                throw new IllegalArgumentException("No puedes consultar propiedades eliminadas");
+            }
             return propertyRepository.findByOwnerIdAndPropertyStatus(ownerId, status, pagination);
         }
 
-        return propertyRepository.findByOwnerId(ownerId, pagination);
+        return propertyRepository.findByOwnerIdAndPropertyStatusNot(ownerId, PropertyStatus.DELETED, pagination);
     }
 
     private String getUserEmailFromToken() {

@@ -57,16 +57,16 @@ public class InitiatePeriodicPaymentService implements InitiatePeriodicPaymentUs
     private RentalContract getValidatedContract(ContractId contractId, Long tenantId) {
 
         RentalContract contract = contractRepository.findById(contractId)
-                .orElseThrow(() -> new IllegalArgumentException("Contract not found: " + contractId));
+                .orElseThrow(() -> new IllegalArgumentException("Contrato no encontrado: " + contractId));
 
         if (contract.getStatus() != ContractStatus.ACTIVE &&
                 contract.getStatus() != ContractStatus.CANCELLATION_PENDING) {
             throw new IllegalStateException(
-                    "Only active contracts can be paid. Current status: " + contract.getStatus());
+                    "Solo los contratos activos pueden ser pagados. Estado actual: " + contract.getStatus());
         }
 
         if (!contract.getTenantId().equals(tenantId)) {
-            throw new SecurityException("Only the tenant can initiate payment for this contract");
+            throw new SecurityException("Solo el arrendatario puede iniciar el pago de este contrato");
         }
 
         return contract;
@@ -102,8 +102,52 @@ public class InitiatePeriodicPaymentService implements InitiatePeriodicPaymentUs
         );
 
         if (exists) {
-            throw new IllegalStateException("Payment for period " + period + " already exists");
+            String periodoLegible = formatearPeriodo(period, contract.getPaymentFrequency());
+            throw new IllegalStateException("Ya existe un pago registrado para " + periodoLegible + ". No puedes pagar dos veces el mismo período.");
         }
+    }
+
+    private String formatearPeriodo(String period, com.backend.housing.domain.entity.properties.enums.PaymentFrequency frequency) {
+        if (period == null) return "este período";
+
+        return switch (frequency) {
+            case MONTHLY -> {
+                if (period.matches("\\d{4}-\\d{2}")) {
+                    String[] parts = period.split("-");
+                    String monthName = switch (parts[1]) {
+                        case "01" -> "Enero";
+                        case "02" -> "Febrero";
+                        case "03" -> "Marzo";
+                        case "04" -> "Abril";
+                        case "05" -> "Mayo";
+                        case "06" -> "Junio";
+                        case "07" -> "Julio";
+                        case "08" -> "Agosto";
+                        case "09" -> "Septiembre";
+                        case "10" -> "Octubre";
+                        case "11" -> "Noviembre";
+                        case "12" -> "Diciembre";
+                        default -> parts[1];
+                    };
+                    yield monthName + " " + parts[0];
+                }
+                yield period;
+            }
+            case WEEKLY -> {
+                if (period.contains("_week")) {
+                    String date = period.replace("_week", "");
+                    yield "la semana que inicia el " + date;
+                }
+                yield period;
+            }
+            case BIWEEKLY -> {
+                if (period.contains("-W")) {
+                    String[] parts = period.split("-W");
+                    yield "la quincena " + parts[1] + " del " + parts[0];
+                }
+                yield period;
+            }
+        };
     }
 
     private CheckoutSessionResult createCheckout(RentalContract contract,

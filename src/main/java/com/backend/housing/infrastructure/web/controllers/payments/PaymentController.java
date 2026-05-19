@@ -1,15 +1,15 @@
 package com.backend.housing.infrastructure.web.controllers.payments;
 
 import com.backend.housing.application.commands.payments.InitiatePaymentCommand;
+import com.backend.housing.application.dto.response.payments.NextPaymentResponse;
 import com.backend.housing.application.dto.response.payments.PaymentHistoryResponse;
+import com.backend.housing.application.dto.response.payments.PaymentInitiateResponse;
 import com.backend.housing.domain.entity.payments.valueobjects.PaymentId;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.ContractId;
 import com.backend.housing.domain.entity.users.User;
-import com.backend.housing.domain.ports.in.payments.GetPaymentHistoryUseCase;
-import com.backend.housing.domain.ports.in.payments.GetPaymentReceiptUseCase;
-import com.backend.housing.domain.ports.in.payments.InitiatePaymentUseCase;
-import com.backend.housing.domain.ports.in.payments.InitiatePeriodicPaymentUseCase;
+import com.backend.housing.domain.ports.in.payments.*;
 import com.backend.housing.domain.ports.out.properties.UserValidationPort;
+import com.backend.housing.infrastructure.pdf.PaymentHistoryPdfGenerator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpHeaders;
@@ -32,22 +32,26 @@ public class PaymentController {
     private final GetPaymentHistoryUseCase getPaymentHistoryUseCase;
     private final UserValidationPort userValidationPort;
     private final GetPaymentReceiptUseCase getPaymentReceiptUseCase;
-
+    private final GetNextPaymentUseCase getNextPaymentUseCase;
+private final PaymentHistoryPdfGenerator paymentHistoryPdfGenerator;
     public PaymentController(InitiatePaymentUseCase initiatePaymentUseCase,
                              InitiatePeriodicPaymentUseCase initiatePeriodicPaymentUseCase,
                              GetPaymentHistoryUseCase getPaymentHistoryUseCase,
                              UserValidationPort userValidationPort,
-                             GetPaymentReceiptUseCase getPaymentReceiptUseCase) {
+                             GetPaymentReceiptUseCase getPaymentReceiptUseCase,
+                             GetNextPaymentUseCase getNextPaymentUseCase, PaymentHistoryPdfGenerator paymentHistoryPdfGenerator) {
         this.initiatePaymentUseCase = initiatePaymentUseCase;
         this.initiatePeriodicPaymentUseCase = initiatePeriodicPaymentUseCase;
         this.getPaymentHistoryUseCase = getPaymentHistoryUseCase;
         this.userValidationPort = userValidationPort;
         this.getPaymentReceiptUseCase = getPaymentReceiptUseCase;
+        this.getNextPaymentUseCase = getNextPaymentUseCase;
+        this.paymentHistoryPdfGenerator = new PaymentHistoryPdfGenerator();
     }
 
     @Operation(summary = "Iniciar pago de un contrato (redirige a Stripe) - SOLO PRIMER PAGO")
     @PostMapping("/initiate/{contractId}")
-    public ResponseEntity<Map<String, String>> initiatePayment(@PathVariable UUID contractId) {
+    public ResponseEntity<PaymentInitiateResponse> initiatePayment(@PathVariable UUID contractId) {
         User currentUser = getAuthenticatedUser();
 
         InitiatePaymentCommand command = InitiatePaymentCommand.builder()
@@ -57,7 +61,13 @@ public class PaymentController {
 
         String checkoutUrl = initiatePaymentUseCase.initiatePayment(command);
 
-        return ResponseEntity.ok(Map.of("checkoutUrl", checkoutUrl));
+        PaymentInitiateResponse response = new PaymentInitiateResponse(
+                checkoutUrl,
+                "Pago iniciado correctamente",
+                "Completa el pago en Stripe para activar tu contrato"
+        );
+
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Pagar período actual (mensual/semanal/quincenal) - PAGOS RECURRENTES")
@@ -102,6 +112,36 @@ public class PaymentController {
     @GetMapping("/receipt/{contractId}")
     public ResponseEntity<byte[]> getPaymentReceiptLegacy(@PathVariable UUID contractId) {
         return getReceiptByContract(contractId);
+    }
+
+    @Operation(summary = "Ver próximo pago de un contrato")
+    @GetMapping("/contract/{contractId}/next-payment")
+    public ResponseEntity<NextPaymentResponse> getNextPayment(@PathVariable UUID contractId) {
+        User currentUser = getAuthenticatedUser();
+        NextPaymentResponse response = getNextPaymentUseCase.execute(
+                ContractId.of(contractId),
+                currentUser.getId()
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "Descargar historial de pagos en PDF")
+    @GetMapping("/contract/{contractId}/history/pdf")
+    public ResponseEntity<byte[]> getPaymentHistoryPdf(@PathVariable UUID contractId) {
+        User currentUser = getAuthenticatedUser();
+
+        PaymentHistoryResponse history = getPaymentHistoryUseCase.execute(
+                ContractId.of(contractId),
+                currentUser.getId()
+        );
+
+        byte[] pdf = paymentHistoryPdfGenerator.generate(history);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"historial_pagos_" + contractId + ".pdf\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
     }
 
     private ResponseEntity<byte[]> buildPdfResponse(byte[] pdf, String filename) {

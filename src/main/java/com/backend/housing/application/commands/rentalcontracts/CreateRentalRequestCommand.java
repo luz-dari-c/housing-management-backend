@@ -13,28 +13,25 @@ public class CreateRentalRequestCommand {
     private final PropertyId propertyId;
     private final Long tenantId;
     private final LocalDate startDate;
-    private final LocalDate endDate;
+    private final Integer duration;
     private final BigDecimal proposedRent;
 
     public CreateRentalRequestCommand(PropertyId propertyId,
                                       Long tenantId,
                                       LocalDate startDate,
-                                      LocalDate endDate,
+                                      Integer duration,
                                       BigDecimal proposedRent) {
 
         this.propertyId = Objects.requireNonNull(propertyId, "PropertyId is required");
         this.tenantId = Objects.requireNonNull(tenantId, "TenantId is required");
         this.startDate = Objects.requireNonNull(startDate, "StartDate is required");
-        this.endDate = Objects.requireNonNull(endDate, "EndDate is required");
+        this.duration = Objects.requireNonNull(duration, "Duration is required");
         this.proposedRent = proposedRent;
 
-        validateDates();
+        validateStartDate();
     }
 
-    private void validateDates() {
-        if (endDate.isBefore(startDate)) {
-            throw new IllegalArgumentException("End date must be after start date");
-        }
+    private void validateStartDate() {
         if (startDate.isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("Start date cannot be in the past");
         }

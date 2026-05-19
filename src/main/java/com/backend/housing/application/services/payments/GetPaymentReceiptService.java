@@ -77,6 +77,9 @@ public class GetPaymentReceiptService implements GetPaymentReceiptUseCase {
     }
 
     private byte[] generateReceipt(Payment payment, RentalContract contract) {
+        String period = payment.getPeriod() != null ? payment.getPeriod() : "—";
+        String message = "Pago procesado exitosamente. Este comprobante certifica la transacción.";
+
         PaymentReceiptResponse receipt = new PaymentReceiptResponse(
                 payment.getId().getValue(),
                 contract.getId().getValue(),
@@ -91,7 +94,9 @@ public class GetPaymentReceiptService implements GetPaymentReceiptUseCase {
                 userValidationPort.getUserName(contract.getOwnerId()).orElse("—"),
                 propertyService.getPropertyBasicInfo(contract.getPropertyId())
                         .map(prop -> prop.getTitle())
-                        .orElse("—")
+                        .orElse("—"),
+                period,
+                message
         );
 
         return pdfGenerator.generate(receipt);

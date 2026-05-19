@@ -16,12 +16,14 @@ import java.util.UUID;
 public interface JpaPropertyRepository
         extends JpaRepository<PropertyEntity, UUID>, JpaSpecificationExecutor<PropertyEntity> {
 
-    List<PropertyEntity> findByPropertyStatus(PropertyStatus status);
 
     Page<PropertyEntity> findByPropertyStatus(PropertyStatus status, Pageable pageable);
 
     Page<PropertyEntity> findByOwnerIdAndPropertyStatus(Long ownerId, PropertyStatus status, Pageable pageable);
 
     Page<PropertyEntity> findByOwnerId(Long ownerId, Pageable pageable);
+
+    Page<PropertyEntity> findByOwnerIdAndPropertyStatusNot(Long ownerId, PropertyStatus status, Pageable pageable);
+
 
 }

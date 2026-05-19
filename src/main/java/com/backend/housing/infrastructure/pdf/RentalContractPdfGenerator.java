@@ -1,8 +1,8 @@
 package com.backend.housing.infrastructure.pdf;
 
 import com.backend.housing.application.dto.response.rentalcontracts.ContractResponse;
+import com.backend.housing.domain.entity.properties.enums.PaymentFrequency;
 import com.backend.housing.domain.entity.rentalcontracts.Enums.ContractStatus;
-import com.itextpdf.kernel.colors.Color;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.events.Event;
 import com.itextpdf.kernel.events.IEventHandler;
@@ -15,15 +15,13 @@ import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
-import com.itextpdf.kernel.pdf.canvas.draw.DottedLine;
 import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
-import com.itextpdf.kernel.pdf.extgstate.PdfExtGState;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
-import com.itextpdf.layout.borders.DashedBorder;
 import com.itextpdf.layout.borders.SolidBorder;
 import com.itextpdf.layout.element.*;
-import com.itextpdf.layout.properties.*;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
@@ -37,779 +35,493 @@ import java.util.Locale;
 @Component
 public class RentalContractPdfGenerator {
 
-    // ==================== PALETA DE COLORES PREMIUM ====================
-    private static final DeviceRgb NAVY_DEEP = new DeviceRgb(10, 22, 40);
-    private static final DeviceRgb NAVY_PRIMARY = new DeviceRgb(11, 27, 48);
-    private static final DeviceRgb GOLD_CLASSIC = new DeviceRgb(197, 160, 89);
-    private static final DeviceRgb GOLD_SHINE = new DeviceRgb(212, 175, 55);
-    private static final DeviceRgb STONE_GRAY = new DeviceRgb(74, 85, 104);
-    private static final DeviceRgb IVORY_BG = new DeviceRgb(248, 246, 240);
-    private static final DeviceRgb IVORY_BG_ALT = new DeviceRgb(245, 243, 237);
-    private static final DeviceRgb TEXT_DARK = new DeviceRgb(28, 30, 36);
-    private static final DeviceRgb TEXT_SOFT = new DeviceRgb(72, 78, 90);
-    private static final DeviceRgb TEXT_LIGHT = new DeviceRgb(120, 126, 140);
-    private static final DeviceRgb BORDER_GOLD_LIGHT = new DeviceRgb(212, 185, 110);
-    private static final DeviceRgb BORDER_SUBTLE = new DeviceRgb(220, 218, 210);
+    private static final DeviceRgb BLACK = new DeviceRgb(0, 0, 0);
+    private static final DeviceRgb DARK_GRAY = new DeviceRgb(45, 45, 45);
+    private static final DeviceRgb GRAY = new DeviceRgb(80, 80, 80);
+    private static final DeviceRgb BORDER_GRAY = new DeviceRgb(200, 200, 200);
 
-    // Colores de estado
-    private static final DeviceRgb STATUS_ACTIVE = new DeviceRgb(16, 110, 70);
-    private static final DeviceRgb STATUS_PENDING = new DeviceRgb(217, 119, 6);
-    private static final DeviceRgb STATUS_DANGER = new DeviceRgb(185, 28, 28);
-    private static final DeviceRgb STATUS_MUTED = new DeviceRgb(100, 100, 110);
+    private static final float MARGIN_TOP = 72f;
+    private static final float MARGIN_BOTTOM = 72f;
+    private static final float MARGIN_LEFT = 72f;
+    private static final float MARGIN_RIGHT = 72f;
 
-    // ==================== CONFIGURACIÓN DE MÁRGENES ====================
-    private static final float MARGIN_TOP = 70f;
-    private static final float MARGIN_BOTTOM = 60f;
-    private static final float MARGIN_LEFT = 80f;
-    private static final float MARGIN_RIGHT = 60f;
-    private static final float INNER_MARGIN = 20f;
-    private static final float SIDEBAR_GOLD_WIDTH = 1.5f;
-    private static final float SIDEBAR_NAVY_WIDTH = 3f;
-
-    // ==================== FORMATOS ====================
     private static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", new Locale("es", "CO"));
     private static final DateTimeFormatter DATETIME_FORMATTER =
-            DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy 'a las' HH:mm", new Locale("es", "CO"));
+            DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", new Locale("es", "CO"));
 
-    private PdfFont titleFont;
-    private PdfFont subtitleFont;
-    private PdfFont bodyFont;
-    private PdfFont lightFont;
+    private PdfFont regularFont;
+    private PdfFont boldFont;
 
     public byte[] generate(ContractResponse contract) {
         try {
-            titleFont = PdfFontFactory.createFont("Times-Roman");
-            subtitleFont = PdfFontFactory.createFont("Times-Bold");
-            bodyFont = PdfFontFactory.createFont("Helvetica");
-            lightFont = PdfFontFactory.createFont("Helvetica-Oblique");
+            regularFont = PdfFontFactory.createFont("Helvetica");
+            boldFont = PdfFontFactory.createFont("Helvetica-Bold");
         } catch (IOException e) {
-            throw new RuntimeException("Error al cargar las fuentes", e);
+            throw new RuntimeException("Error loading fonts", e);
         }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PdfWriter writer = new PdfWriter(baos);
         PdfDocument pdfDoc = new PdfDocument(writer);
-
-        pdfDoc.setDefaultPageSize(PageSize.A4);
-
         Document document = new Document(pdfDoc, PageSize.A4);
-        document.setMargins(MARGIN_TOP, MARGIN_RIGHT + INNER_MARGIN, MARGIN_BOTTOM, MARGIN_LEFT + INNER_MARGIN);
+        document.setMargins(MARGIN_TOP, MARGIN_RIGHT, MARGIN_BOTTOM, MARGIN_LEFT);
 
-        // Handlers
-        pdfDoc.addEventHandler(PdfDocumentEvent.START_PAGE, new GoldSidebarHandler());
-        pdfDoc.addEventHandler(PdfDocumentEvent.END_PAGE, new PremiumFooterHandler(contract, pdfDoc));
-        pdfDoc.addEventHandler(PdfDocumentEvent.START_PAGE, new WatermarkHandler());
+        document.add(createHeader(contract));
+        document.add(new Paragraph(" ").setMarginBottom(15));
 
-        // Encabezado
-        createLuxuryHeader(document, contract);
-        document.add(new Paragraph("\n"));
+        document.add(createTitle());
+        document.add(new Paragraph(" ").setMarginBottom(10));
 
-        // Título principal
-        createMainTitle(document);
-        document.add(new Paragraph("\n"));
+        document.add(createCelebrationDate(contract));
+        document.add(new Paragraph(" ").setMarginBottom(20));
 
-        // Fecha
-        createCelebrationDate(document, contract);
+        document.add(createPartiesSection(contract));
+        document.add(new Paragraph(" ").setMarginBottom(15));
 
-        // Secciones
-        createPartiesSection(document, contract);
-        document.add(new Paragraph("\n"));
+        document.add(createRecitalsSection(contract));
+        document.add(new Paragraph(" ").setMarginBottom(15));
 
-        createExpositionSection(document, contract);
-        document.add(new Paragraph("\n"));
+        document.add(createPropertySection(contract));
+        document.add(new Paragraph(" ").setMarginBottom(15));
 
-        createPropertySection(document, contract);
-        document.add(new Paragraph("\n"));
+        document.add(createTermsSection(contract));
+        document.add(new Paragraph(" ").setMarginBottom(15));
 
-        createTermsSection(document, contract);
-        document.add(new Paragraph("\n"));
+        document.add(createClausesSection(contract));
+        document.add(new Paragraph(" ").setMarginBottom(20));
 
-        createStatusBadge(document, contract);
-        document.add(new Paragraph("\n"));
-
-        createClausesSection(document, contract);
-
-        createDecorativeSeparator(document);
-
-        createEnhancedSignatureSection(document, contract);
-
-        document.add(new Paragraph("\n"));
-        createLegalFooter(document, contract);
+        document.add(createSignaturesSection(contract));
 
         document.close();
         return baos.toByteArray();
     }
 
-    // ==================== MÉTODOS DE CONSTRUCCIÓN ====================
+    private Table createHeader(ContractResponse contract) {
+        Table header = new Table(UnitValue.createPercentArray(new float[]{100})).useAllAvailableWidth();
 
-    private void createLuxuryHeader(Document document, ContractResponse contract) {
-        Table topBorder = new Table(UnitValue.createPercentArray(new float[]{1})).useAllAvailableWidth();
-        topBorder.addCell(new Cell()
-                .setHeight(2)
-                .setBackgroundColor(GOLD_CLASSIC)
+        Paragraph contractNumber = new Paragraph("CONTRATO DE ARRENDAMIENTO NÚMERO: " + contract.contractId().toString().substring(0, 12).toUpperCase())
+                .setFont(boldFont).setFontSize(10).setFontColor(DARK_GRAY)
+                .setTextAlignment(TextAlignment.CENTER);
+
+        Cell headerCell = new Cell().add(contractNumber)
                 .setBorder(Border.NO_BORDER)
-                .setPadding(0));
-        document.add(topBorder);
+                .setPaddingBottom(10);
 
-        document.add(new Paragraph(" ").setMarginBottom(10));
+        header.addCell(headerCell);
 
-        Table headerTable = new Table(UnitValue.createPercentArray(new float[]{60, 40})).useAllAvailableWidth();
-        headerTable.setMarginBottom(8);
+        SolidLine solidLine = new SolidLine(0.8f);
+        solidLine.setColor(BLACK);
+        LineSeparator line = new LineSeparator(solidLine);
+        header.addCell(new Cell().add(line).setBorder(Border.NO_BORDER).setPadding(0));
 
-        Cell brandCell = new Cell()
-                .add(new Paragraph("NESTLY").setFont(titleFont).setFontSize(28).setFontColor(NAVY_DEEP).setMargin(0))
-                .add(new Paragraph("GESTIÓN INMOBILIARIA DE ALTA GAMA")
-                        .setFont(lightFont).setFontSize(7).setFontColor(STONE_GRAY).setMargin(0))
-                .setBorder(Border.NO_BORDER).setPadding(0);
-        headerTable.addCell(brandCell);
-
-        String contractNum = contract.getContractId().toString().substring(0, 12).toUpperCase();
-        Cell certCell = new Cell()
-                .add(new Paragraph("CONTRATO N°")
-                        .setFont(lightFont).setFontSize(6).setFontColor(STONE_GRAY).setTextAlignment(TextAlignment.RIGHT))
-                .add(new Paragraph(contractNum)
-                        .setFont(subtitleFont).setFontSize(12).setFontColor(GOLD_CLASSIC).setTextAlignment(TextAlignment.RIGHT))
-                .add(new Paragraph("CERTIFICADO DIGITAL")
-                        .setFont(lightFont).setFontSize(5).setFontColor(GOLD_CLASSIC).setTextAlignment(TextAlignment.RIGHT))
-                .setBorder(new DashedBorder(GOLD_CLASSIC, 0.5f))
-                .setPadding(8).setMargin(2)
-                .setBackgroundColor(IVORY_BG);
-        headerTable.addCell(certCell);
-        document.add(headerTable);
-
-        SolidLine thickGoldLine = new SolidLine(1.2f);
-        thickGoldLine.setColor(GOLD_CLASSIC);
-        LineSeparator goldLine = new LineSeparator(thickGoldLine);
-        goldLine.setMarginBottom(3);
-        document.add(goldLine);
-
-        SolidLine thinDarkLine = new SolidLine(0.5f);
-        thinDarkLine.setColor(NAVY_PRIMARY);
-        LineSeparator darkLine = new LineSeparator(thinDarkLine);
-        darkLine.setMarginBottom(16);
-        document.add(darkLine);
+        return header;
     }
 
-    private void createMainTitle(Document document) {
-        Paragraph crownDeco = new Paragraph("✦ • ✦ • ✦")
-                .setFont(lightFont).setFontSize(8).setFontColor(GOLD_CLASSIC)
-                .setTextAlignment(TextAlignment.CENTER).setMarginBottom(8);
-        document.add(crownDeco);
+    private Div createTitle() {
+        Div titleDiv = new Div();
 
         Paragraph mainTitle = new Paragraph("CONTRATO DE ARRENDAMIENTO")
-                .setFont(titleFont).setFontSize(26).setFontColor(NAVY_DEEP)
-                .setTextAlignment(TextAlignment.CENTER).setMarginBottom(6);
-        document.add(mainTitle);
-
-        Paragraph subTitle = new Paragraph("DE INMUEBLE URBANO - RÉGIMEN DE PROPIEDAD HORIZONTAL")
-                .setFont(lightFont).setFontSize(9).setFontColor(STONE_GRAY)
+                .setFont(boldFont).setFontSize(18).setFontColor(BLACK)
                 .setTextAlignment(TextAlignment.CENTER);
-        document.add(subTitle);
 
-        document.add(new Paragraph(" ").setMarginBottom(12));
+        Paragraph subTitle = new Paragraph("DE INMUEBLE URBANO")
+                .setFont(regularFont).setFontSize(11).setFontColor(GRAY)
+                .setTextAlignment(TextAlignment.CENTER);
+
+        titleDiv.add(mainTitle);
+        titleDiv.add(subTitle);
+        titleDiv.setMarginBottom(5);
+
+        return titleDiv;
     }
 
-    private void createCelebrationDate(Document document, ContractResponse contract) {
+    private Div createCelebrationDate(ContractResponse contract) {
+        Div dateDiv = new Div();
+
         String city = "Cartagena de Indias, D.T. y C.";
-        String dateStr = contract.getCreatedAt().format(DATE_FORMATTER);
-        String celebrationDate = String.format("%s, %s", city, dateStr);
+        String dateStr = contract.createdAt().format(DATETIME_FORMATTER);
 
-        Div dateBox = new Div();
-        dateBox.add(new Paragraph(celebrationDate)
-                .setFont(bodyFont).setFontSize(9).setFontColor(TEXT_SOFT)
-                .setTextAlignment(TextAlignment.CENTER));
-        dateBox.setBorderBottom(new SolidBorder(GOLD_CLASSIC, 0.5f));
-        dateBox.setBorderTop(new SolidBorder(GOLD_CLASSIC, 0.5f));
-        dateBox.setPadding(8);
-        dateBox.setWidth(UnitValue.createPercentValue(60)); // Este sí acepta UnitValue
-        dateBox.setMarginBottom(25); // float directo
-        dateBox.setMarginLeft(70); // Valor en puntos, ajusta según necesites
-        dateBox.setMarginRight(70); // Valor en puntos, ajusta según necesites
+        Paragraph datePara = new Paragraph("En la ciudad de " + city + ", a los " + dateStr)
+                .setFont(regularFont).setFontSize(10).setFontColor(DARK_GRAY)
+                .setTextAlignment(TextAlignment.CENTER);
 
-        document.add(dateBox);
+        dateDiv.add(datePara);
+        dateDiv.setMarginBottom(5);
+
+        return dateDiv;
     }
-    private void createPartiesSection(Document document, ContractResponse contract) {
-        Div sectionDiv = new Div();
-        sectionDiv.setBorder(new SolidBorder(BORDER_SUBTLE, 0.5f));
-        sectionDiv.setBackgroundColor(IVORY_BG);
-        sectionDiv.setMarginBottom(22);
-        sectionDiv.setPadding(0);
 
-        Div headerDiv = new Div();
-        headerDiv.add(new Paragraph("COMPARECIENTES")
-                .setFont(subtitleFont).setFontSize(10).setFontColor(NAVY_DEEP));
-        headerDiv.setBorderBottom(new SolidBorder(GOLD_CLASSIC, 1.5f));
-        headerDiv.setPadding(12);
-        headerDiv.setPaddingBottom(8);
-        sectionDiv.add(headerDiv);
+    private Div createPartiesSection(ContractResponse contract) {
+        Div section = new Div();
 
-        Div contentDiv = new Div();
-        contentDiv.setPadding(16);
+        Paragraph title = new Paragraph("COMPARECIENTES")
+                .setFont(boldFont).setFontSize(12).setFontColor(BLACK)
+                .setBorderBottom(new SolidBorder(BLACK, 0.5f))
+                .setPaddingBottom(5);
+        section.add(title);
+        section.add(new Paragraph(" ").setMarginBottom(5));
 
         Table partiesTable = new Table(UnitValue.createPercentArray(new float[]{48, 48})).useAllAvailableWidth();
-        partiesTable.setMarginBottom(10);
 
-        partiesTable.addCell(createPremiumPartyCard("ARRENDADOR", contract.getOwnerName(), "Legítimo propietario"));
-        partiesTable.addCell(createPremiumPartyCard("ARRENDATARIO", contract.getTenantName(), "Arrendatario responsable"));
+        partiesTable.addCell(createPartyCell("ARRENDADOR", contract.ownerName(), "Propietario del inmueble"));
+        partiesTable.addCell(createPartyCell("ARRENDATARIO", contract.tenantName(), "Arrendatario"));
 
-        contentDiv.add(partiesTable);
-        sectionDiv.add(contentDiv);
-        document.add(sectionDiv);
+        section.add(partiesTable);
+        section.setMarginBottom(10);
+
+        return section;
     }
 
-    private Cell createPremiumPartyCard(String role, String name, String subtitle) {
-        Div card = new Div();
-        card.setBorder(new SolidBorder(GOLD_CLASSIC, 0.8f));
-        card.setBackgroundColor(IVORY_BG);
-        card.setPadding(14);
+    private Cell createPartyCell(String role, String name, String description) {
+        Div cellDiv = new Div();
 
-        card.add(new Paragraph(role)
-                .setFont(subtitleFont).setFontSize(8).setFontColor(GOLD_CLASSIC));
-        card.add(new Paragraph(name)
-                .setFont(titleFont).setFontSize(13).setFontColor(NAVY_DEEP)
-                .setMarginTop(6).setMarginBottom(4));
-        card.add(new Paragraph(subtitle)
-                .setFont(lightFont).setFontSize(7).setFontColor(TEXT_SOFT));
-        card.add(new Paragraph("C.C. _________________")
-                .setFont(bodyFont).setFontSize(7).setFontColor(TEXT_LIGHT)
-                .setMarginTop(8));
+        cellDiv.add(new Paragraph(role).setFont(boldFont).setFontSize(9).setFontColor(GRAY));
+        cellDiv.add(new Paragraph(name.toUpperCase()).setFont(boldFont).setFontSize(11).setFontColor(BLACK).setMarginTop(3));
+        cellDiv.add(new Paragraph(description).setFont(regularFont).setFontSize(8).setFontColor(GRAY).setMarginTop(2));
+        cellDiv.add(new Paragraph("Identificación: _________________").setFont(regularFont).setFontSize(8).setFontColor(GRAY).setMarginTop(5));
 
-        return new Cell().add(card).setBorder(Border.NO_BORDER).setPadding(5);
+        return new Cell().add(cellDiv)
+                .setBorder(new SolidBorder(BORDER_GRAY, 0.5f))
+                .setPadding(10);
     }
 
-    private void createExpositionSection(Document document, ContractResponse contract) {
-        Div sectionDiv = new Div();
-        sectionDiv.setBorder(new SolidBorder(BORDER_SUBTLE, 0.5f));
-        sectionDiv.setBackgroundColor(IVORY_BG);
-        sectionDiv.setMarginBottom(22);
-        sectionDiv.setPadding(0);
+    private Div createRecitalsSection(ContractResponse contract) {
+        Div section = new Div();
 
-        Div headerDiv = new Div();
-        headerDiv.add(new Paragraph("EXPOSICIÓN")
-                .setFont(subtitleFont).setFontSize(10).setFontColor(NAVY_DEEP));
-        headerDiv.setBorderBottom(new SolidBorder(GOLD_CLASSIC, 1.5f));
-        headerDiv.setPadding(12);
-        headerDiv.setPaddingBottom(8);
-        sectionDiv.add(headerDiv);
+        Paragraph title = new Paragraph("EXPOSICIÓN")
+                .setFont(boldFont).setFontSize(12).setFontColor(BLACK)
+                .setBorderBottom(new SolidBorder(BLACK, 0.5f))
+                .setPaddingBottom(5);
+        section.add(title);
+        section.add(new Paragraph(" ").setMarginBottom(5));
 
-        Div contentDiv = new Div();
-        contentDiv.setPadding(16);
+        String ownerNameUpper = contract.ownerName().toUpperCase();
+        String tenantNameUpper = contract.tenantName().toUpperCase();
 
-        String exposition = "PRIMERA.- El ARRENDADOR es legítimo propietario del inmueble ubicado en " +
-                contract.getPropertyTitle() + ", con plena capacidad para celebrar el presente contrato.\n\n" +
-                "SEGUNDA.- El ARRENDATARIO manifiesta su voluntad de tomar en arrendamiento el inmueble descrito, " +
-                "destinándolo exclusivamente para uso residencial, comprometiéndose a cumplir todas las " +
-                "obligaciones establecidas en la Ley 820 de 2003 y las cláusulas contenidas en este documento.\n\n" +
-                "TERCERA.- Las partes acuerdan regirse por las siguientes cláusulas, las cuales han sido revisadas " +
-                "y aceptadas a través de la plataforma digital Nestly, otorgándoles plena validez legal conforme " +
-                "a la Ley 527 de 1999 sobre mensajes de datos.";
+        String recitals =
+                "PRIMERA. - " + ownerNameUpper + " (en adelante EL ARRENDADOR) es legítimo propietario del inmueble ubicado en " + contract.propertyTitle() +
+                        ", con plena capacidad legal para celebrar el presente contrato.\n\n" +
 
-        Paragraph expositionPara = new Paragraph(exposition)
-                .setFont(bodyFont).setFontSize(9).setFontColor(TEXT_DARK)
-                .setTextAlignment(TextAlignment.JUSTIFIED).setMultipliedLeading(1.5f);
-        contentDiv.add(expositionPara);
-        sectionDiv.add(contentDiv);
-        document.add(sectionDiv);
+                        "SEGUNDA. - " + tenantNameUpper + " (en adelante EL ARRENDATARIO) manifiesta su voluntad de tomar en arrendamiento el inmueble descrito, " +
+                        "destinándolo exclusivamente para uso residencial, comprometiéndose a cumplir todas las obligaciones " +
+                        "establecidas en la Ley 820 de 2003 y las cláusulas contenidas en este documento.\n\n" +
+
+                        "TERCERA. - Las partes acuerdan regirse por las siguientes cláusulas, las cuales han sido revisadas " +
+                        "y aceptadas en su totalidad, otorgándoles plena validez legal.";
+
+        Paragraph recitalsPara = new Paragraph(recitals)
+                .setFont(regularFont).setFontSize(9).setFontColor(DARK_GRAY)
+                .setTextAlignment(TextAlignment.JUSTIFIED).setMultipliedLeading(1.4f);
+
+        section.add(recitalsPara);
+        section.setMarginBottom(10);
+
+        return section;
     }
 
-    private void createPropertySection(Document document, ContractResponse contract) {
-        Div sectionDiv = new Div();
-        sectionDiv.setBorder(new SolidBorder(BORDER_SUBTLE, 0.5f));
-        sectionDiv.setBackgroundColor(IVORY_BG);
-        sectionDiv.setMarginBottom(22);
-        sectionDiv.setPadding(0);
+    private Div createPropertySection(ContractResponse contract) {
+        Div section = new Div();
 
-        Div headerDiv = new Div();
-        headerDiv.add(new Paragraph("DETALLES DE LA PROPIEDAD")
-                .setFont(subtitleFont).setFontSize(10).setFontColor(NAVY_DEEP));
-        headerDiv.setBorderBottom(new SolidBorder(GOLD_CLASSIC, 1.5f));
-        headerDiv.setPadding(12);
-        headerDiv.setPaddingBottom(8);
-        sectionDiv.add(headerDiv);
+        Paragraph title = new Paragraph("DESCRIPCIÓN DEL INMUEBLE")
+                .setFont(boldFont).setFontSize(12).setFontColor(BLACK)
+                .setBorderBottom(new SolidBorder(BLACK, 0.5f))
+                .setPaddingBottom(5);
+        section.add(title);
+        section.add(new Paragraph(" ").setMarginBottom(5));
 
-        Div contentDiv = new Div();
-        contentDiv.setPadding(16);
+        Table propertyTable = new Table(UnitValue.createPercentArray(new float[]{25, 75})).useAllAvailableWidth();
+        propertyTable.setBorder(new SolidBorder(BORDER_GRAY, 0.5f));
 
-        Table propertyTable = new Table(UnitValue.createPercentArray(new float[]{28, 72})).useAllAvailableWidth();
-        propertyTable.setBorder(new SolidBorder(BORDER_SUBTLE, 1));
+        addTableRow(propertyTable, "DIRECCIÓN:", contract.propertyTitle());
+        addTableRow(propertyTable, "MATRÍCULA:", contract.propertyId().toString().substring(0, 12).toUpperCase());
+        addTableRow(propertyTable, "DESTINACIÓN ECONÓMICA:", "Residencial - Vivienda familiar");
 
-        addStyledTableRow(propertyTable, "DIRECCIÓN", contract.getPropertyTitle());
-        addStyledTableRow(propertyTable, "ID PROPIEDAD", contract.getPropertyId().toString().substring(0, 12).toUpperCase());
-        addStyledTableRow(propertyTable, "MATRÍCULA INMOBILIARIA", "NST-" + contract.getPropertyId().toString().substring(0, 8));
-        addStyledTableRow(propertyTable, "DESTINACIÓN", "Residencial - Uso exclusivo vivienda");
+        section.add(propertyTable);
+        section.setMarginBottom(10);
 
-        contentDiv.add(propertyTable);
-        sectionDiv.add(contentDiv);
-        document.add(sectionDiv);
+        return section;
     }
 
-    private void addStyledTableRow(Table table, String label, String value) {
+    private void addTableRow(Table table, String label, String value) {
         Cell labelCell = new Cell()
-                .add(new Paragraph(label).setFont(subtitleFont).setFontSize(8).setFontColor(STONE_GRAY))
+                .add(new Paragraph(label).setFont(boldFont).setFontSize(9).setFontColor(DARK_GRAY))
                 .setBorder(Border.NO_BORDER)
-                .setBackgroundColor(IVORY_BG_ALT)
-                .setPadding(10);
+                .setPadding(8);
         Cell valueCell = new Cell()
-                .add(new Paragraph(value).setFont(bodyFont).setFontSize(9).setFontColor(NAVY_PRIMARY))
+                .add(new Paragraph(value).setFont(regularFont).setFontSize(9).setFontColor(BLACK))
                 .setBorder(Border.NO_BORDER)
-                .setPadding(10);
+                .setPadding(8);
         table.addCell(labelCell);
         table.addCell(valueCell);
     }
 
-    private void createTermsSection(Document document, ContractResponse contract) {
-        Div sectionDiv = new Div();
-        sectionDiv.setBorder(new SolidBorder(BORDER_SUBTLE, 0.5f));
-        sectionDiv.setBackgroundColor(IVORY_BG);
-        sectionDiv.setMarginBottom(22);
-        sectionDiv.setPadding(0);
+    private Div createTermsSection(ContractResponse contract) {
+        Div section = new Div();
 
-        Div headerDiv = new Div();
-        headerDiv.add(new Paragraph("TÉRMINOS CONTRACTUALES")
-                .setFont(subtitleFont).setFontSize(10).setFontColor(NAVY_DEEP));
-        headerDiv.setBorderBottom(new SolidBorder(GOLD_CLASSIC, 1.5f));
-        headerDiv.setPadding(12);
-        headerDiv.setPaddingBottom(8);
-        sectionDiv.add(headerDiv);
+        Paragraph title = new Paragraph("TÉRMINOS DEL CONTRATO")
+                .setFont(boldFont).setFontSize(12).setFontColor(BLACK)
+                .setBorderBottom(new SolidBorder(BLACK, 0.5f))
+                .setPaddingBottom(5);
+        section.add(title);
+        section.add(new Paragraph(" ").setMarginBottom(5));
 
-        Div contentDiv = new Div();
-        contentDiv.setPadding(16);
+        Table termsTable = new Table(UnitValue.createPercentArray(new float[]{35, 65})).useAllAvailableWidth();
+        termsTable.setBorder(new SolidBorder(BORDER_GRAY, 0.5f));
 
-        Table termsTable = new Table(UnitValue.createPercentArray(new float[]{32, 68})).useAllAvailableWidth();
-        termsTable.setBorder(new SolidBorder(BORDER_SUBTLE, 1));
+        String startDate = contract.startDate().format(DATE_FORMATTER);
+        String endDate = contract.endDate().format(DATE_FORMATTER);
+        String duration = calculateDuration(contract);
+        String monthlyRent = formatCurrency(contract.monthlyRent());
+        String paymentDay = getPaymentDayDescription(contract.startDate(), contract.paymentFrequency());
+        String paymentFrequencyText = getPaymentFrequencyText(contract.paymentFrequency());
 
-        String startDate = contract.getStartDate().format(DATE_FORMATTER);
-        String endDate = contract.getEndDate().format(DATE_FORMATTER);
-        String duration = calculateDuration(contract.getStartDate(), contract.getEndDate());
-        String monthlyRent = formatCurrency(contract.getMonthlyRent());
-        String createdAt = contract.getCreatedAt().format(DATETIME_FORMATTER);
+        addTableRow(termsTable, "FECHA DE INICIO:", startDate);
+        addTableRow(termsTable, "FECHA DE TERMINACIÓN:", endDate);
+        addTableRow(termsTable, "PLAZO DE DURACIÓN:", duration);
+        addTableRow(termsTable, "CANON:", monthlyRent);
+        addTableRow(termsTable, "FRECUENCIA DE PAGO:", paymentFrequencyText);
+        addTableRow(termsTable, "DÍA/LIMITE DE PAGO:", paymentDay);
+        addTableRow(termsTable, "FORMA DE PAGO:", "Transferencia bancaria");
 
-        addStyledTableRow(termsTable, "FECHA DE INICIO", startDate);
-        addStyledTableRow(termsTable, "FECHA DE TERMINACIÓN", endDate);
-        addStyledTableRow(termsTable, "PLAZO DE DURACIÓN", duration);
-        addStyledTableRow(termsTable, "CANON MENSUAL", monthlyRent);
-        addStyledTableRow(termsTable, "DÍA DE PAGO", "Primeros 5 días hábiles de cada mes");
-        addStyledTableRow(termsTable, "FORMA DE PAGO", "Transferencia bancaria / Plataforma Nestly");
-        addStyledTableRow(termsTable, "FECHA DE SUSCRIPCIÓN", createdAt);
+        section.add(termsTable);
+        section.setMarginBottom(10);
 
-        contentDiv.add(termsTable);
-        sectionDiv.add(contentDiv);
-        document.add(sectionDiv);
+        return section;
     }
 
-    private void createStatusBadge(Document document, ContractResponse contract) {
-        String statusText = translateStatus(contract.getStatus().name());
-        DeviceRgb statusColor = getStatusColor(contract.getStatus());
-
-        Div badge = new Div();
-        badge.add(new Paragraph(statusText)
-                .setFont(subtitleFont).setFontSize(9).setFontColor(statusColor)
-                .setTextAlignment(TextAlignment.CENTER));
-        badge.setBorder(new SolidBorder(statusColor, 1));
-        badge.setBackgroundColor(IVORY_BG); // Usar color fijo en lugar de calcular
-        badge.setWidth(UnitValue.createPercentValue(25));
-        badge.setMarginTop(15);
-        badge.setMarginBottom(20);
-        badge.setPadding(6);
-        badge.setMarginLeft(37.5f);
-
-        document.add(badge);
+    private String getPaymentFrequencyText(PaymentFrequency frequency) {
+        if (frequency == null) return "Mensual";
+        return switch (frequency) {
+            case MONTHLY -> "Mensual";
+            case BIWEEKLY -> "Quincenal (cada 15 días)";
+            case WEEKLY -> "Semanal (cada 7 días)";
+        };
     }
 
-    private void createClausesSection(Document document, ContractResponse contract) {
-        Div sectionDiv = new Div();
-        sectionDiv.setBorder(new SolidBorder(BORDER_SUBTLE, 0.5f));
-        sectionDiv.setBackgroundColor(IVORY_BG);
-        sectionDiv.setMarginBottom(22);
-        sectionDiv.setPadding(0);
+    private String getPaymentDayDescription(LocalDate startDate, PaymentFrequency frequency) {
+        if (frequency == null) return "Día " + startDate.getDayOfMonth() + " de cada mes";
 
-        Div headerDiv = new Div();
-        headerDiv.add(new Paragraph("CLÁUSULAS CONTRACTUALES")
-                .setFont(subtitleFont).setFontSize(10).setFontColor(NAVY_DEEP));
-        headerDiv.setBorderBottom(new SolidBorder(GOLD_CLASSIC, 1.5f));
-        headerDiv.setPadding(12);
-        headerDiv.setPaddingBottom(8);
-        sectionDiv.add(headerDiv);
+        int dayOfMonth = startDate.getDayOfMonth();
 
-        Div contentDiv = new Div();
-        contentDiv.setPadding(16);
+        return switch (frequency) {
+            case MONTHLY -> "Día " + dayOfMonth + " de cada mes";
+            case BIWEEKLY -> "Cada 15 días, contados a partir del " + startDate.format(DATE_FORMATTER);
+            case WEEKLY -> "Cada 7 días, contados a partir del " + startDate.format(DATE_FORMATTER);
+        };
+    }
 
-        String monthlyRent = formatCurrency(contract.getMonthlyRent());
-        String duration = calculateDuration(contract.getStartDate(), contract.getEndDate());
-        String startDate = contract.getStartDate().format(DATE_FORMATTER);
-        String endDate = contract.getEndDate().format(DATE_FORMATTER);
-        String propertyAddress = contract.getPropertyTitle();
+    private Div createClausesSection(ContractResponse contract) {
+        Div section = new Div();
 
-        contentDiv.add(createClauseCard("PRIMERA", "OBJETO DEL CONTRATO",
+        Paragraph title = new Paragraph("CLÁUSULAS CONTRACTUALES")
+                .setFont(boldFont).setFontSize(12).setFontColor(BLACK)
+                .setBorderBottom(new SolidBorder(BLACK, 0.5f))
+                .setPaddingBottom(5);
+        section.add(title);
+        section.add(new Paragraph(" ").setMarginBottom(5));
+
+        String monthlyRent = formatCurrency(contract.monthlyRent());
+        String startDate = contract.startDate().format(DATE_FORMATTER);
+        String endDate = contract.endDate().format(DATE_FORMATTER);
+        String duration = calculateDuration(contract);
+        String propertyAddress = contract.propertyTitle();
+        String paymentRule = getPaymentRuleDescription(contract);
+        String paymentFrequencyText = getPaymentFrequencyText(contract.paymentFrequency());
+        String ownerNameUpper = contract.ownerName().toUpperCase();
+        String tenantNameUpper = contract.tenantName().toUpperCase();
+
+        section.add(createClause("PRIMERA", "OBJETO DEL CONTRATO",
                 "El presente contrato tiene por objeto el arrendamiento del inmueble ubicado en " + propertyAddress +
-                        ", que el ARRENDADOR entrega al ARRENDATARIO en perfectas condiciones de habitabilidad y con todos los servicios " +
-                        "públicos funcionando, para ser destinado exclusivamente como vivienda familiar."));
+                        ", que " + ownerNameUpper + " (EL ARRENDADOR) entrega a " + tenantNameUpper + " (EL ARRENDATARIO) " +
+                        "en perfectas condiciones de habitabilidad, para ser destinado exclusivamente como vivienda familiar."));
 
-        contentDiv.add(createClauseCard("SEGUNDA", "VIGENCIA",
+        section.add(createClause("SEGUNDA", "VIGENCIA",
                 "El término de duración del presente contrato es de " + duration + ", contados a partir del " + startDate +
-                        " hasta el " + endDate + ". El contrato entrará en vigencia una vez se haya realizado el pago del primer canon " +
-                        "de arrendamiento, momento en el cual la plataforma actualizará automáticamente el estado del contrato a ACTIVO."));
+                        " hasta el " + endDate + ". El contrato entrará en vigencia a partir de la fecha de inicio pactada."));
 
-        contentDiv.add(createClauseCard("TERCERA", "CANON DE ARRENDAMIENTO",
-                "El canon de arrendamiento se fija en la suma de " + monthlyRent + ", que el ARRENDATARIO pagará por mensualidades " +
-                        "anticipadas dentro de los primeros cinco (5) días hábiles de cada mes, a través de los medios de pago habilitados " +
-                        "en la plataforma Nestly. El pago se considerará oportuno cuando se encuentre registrado en el sistema antes de la " +
-                        "fecha límite establecida."));
+        section.add(createClause("TERCERA", "CANON Y FORMA DE PAGO",
+                "El canon de arrendamiento se fija en la suma de " + monthlyRent + ", que EL ARRENDATARIO pagará de manera " +
+                        paymentFrequencyText.toLowerCase() + ". " + paymentRule + " El pago se realizará mediante transferencia bancaria " +
+                        "a la cuenta designada por EL ARRENDADOR, y se considerará oportuno cuando se encuentre acreditado en ella."));
 
-        contentDiv.add(createClauseCardWithList("CUARTA", "OBLIGACIONES DEL ARRENDATARIO",
-                "Son obligaciones del ARRENDATARIO:", new String[]{
+        section.add(createClauseWithList("CUARTA", "OBLIGACIONES DEL ARRENDATARIO",
+                "Son obligaciones de " + tenantNameUpper + " (EL ARRENDATARIO):", new String[]{
                         "Pagar oportunamente el canon de arrendamiento en las fechas estipuladas",
                         "Destinar el inmueble exclusivamente para uso residencial",
                         "Mantener el inmueble en buen estado de conservación y aseo",
-                        "No realizar modificaciones estructurales sin autorización escrita del ARRENDADOR",
+                        "No realizar modificaciones estructurales sin autorización escrita de " + ownerNameUpper,
                         "Responder por los daños y perjuicios causados al inmueble o sus instalaciones",
-                        "Permitir las inspecciones del ARRENDADOR con previo aviso de mínimo 24 horas",
+                        "Permitir las inspecciones de " + ownerNameUpper + " con previo aviso de veinticuatro (24) horas",
                         "No subarrendar ni ceder total o parcialmente el presente contrato"
                 }));
 
-        contentDiv.add(createClauseCardWithList("QUINTA", "OBLIGACIONES DEL ARRENDADOR",
-                "Son obligaciones del ARRENDADOR:", new String[]{
+        section.add(createClauseWithList("QUINTA", "OBLIGACIONES DEL ARRENDADOR",
+                "Son obligaciones de " + ownerNameUpper + " (EL ARRENDADOR):", new String[]{
                         "Entregar el inmueble en condiciones óptimas de habitabilidad",
-                        "Realizar las reparaciones locativas mayores que no sean imputables al ARRENDATARIO",
+                        "Realizar las reparaciones locativas mayores que no sean imputables a " + tenantNameUpper,
                         "Garantizar el goce pacífico del inmueble durante la vigencia del contrato",
                         "Responder por los vicios ocultos de la propiedad",
                         "Pagar el impuesto predial y las expensas comunes de administración"
                 }));
 
-        contentDiv.add(createClauseCard("SEXTA", "MORA Y TERMINACIÓN",
-                "En caso de mora en el pago del canon de arrendamiento, se aplicará un interés de mora del 1.5% mensual " +
-                        "sobre el valor adeudado. El incumplimiento en el pago de dos (2) mensualidades consecutivas dará lugar a la " +
-                        "terminación inmediata del contrato y la plataforma marcará automáticamente el estado como EXPIRADO, " +
-                        "liberando la propiedad sin necesidad de requerimiento judicial previo."));
+        section.add(createClause("SEXTA", "MORA Y TERMINACIÓN",
+                "En caso de mora en el pago del canon de arrendamiento, se aplicará un interés de mora del uno punto cinco por ciento (1.5%) mensual " +
+                        "sobre el valor adeudado. El incumplimiento en el pago de dos (2) obligaciones consecutivas dará lugar a la terminación inmediata del contrato."));
 
-        contentDiv.add(createClauseCard("SÉPTIMA", "CANCELACIÓN ANTICIPADA",
-                "Cualquiera de las partes podrá solicitar la cancelación anticipada del contrato con un preaviso mínimo de treinta (30) días. " +
-                        "Una vez solicitada, el contrato pasará a estado CANCELACIÓN PENDIENTE y seguirá generando obligaciones de pago hasta la " +
-                        "fecha efectiva de cancelación. La cancelación anticipada sin justa causa podrá generar indemnizaciones conforme a lo " +
-                        "dispuesto en la Ley 820 de 2003."));
+        section.add(createClause("SÉPTIMA", "CANCELACIÓN ANTICIPADA",
+                "Cualquiera de las partes podrá dar por terminado el contrato de manera anticipada mediante comunicación escrita " +
+                        "dirigida a la otra parte con una antelación mínima de treinta (30) días. En este caso, no habrá lugar a indemnización alguna."));
 
-        contentDiv.add(createClauseCard("OCTAVA", "SOLUCIÓN DE CONTROVERSIAS",
-                "Las controversias que surjan con motivo del presente contrato se resolverán a través de la conciliación extrajudicial " +
+        section.add(createClause("OCTAVA", "SOLUCIÓN DE CONTROVERSIAS",
+                "Las controversias que surjan con motivo del presente contrato se resolverán a través de conciliación extrajudicial " +
                         "ante la Cámara de Comercio de Cartagena. En caso de no llegar a un acuerdo, las partes se someterán a la jurisdicción " +
-                        "ordinaria de los Jueces Civiles Municipales de Cartagena de Indias, de conformidad con lo dispuesto en la Ley 820 de 2003."));
+                        "ordinaria de los Jueces Civiles Municipales de Cartagena de Indias."));
 
-        sectionDiv.add(contentDiv);
-        document.add(sectionDiv);
+        return section;
     }
 
-    private Div createClauseCard(String number, String title, String content) {
-        Div card = new Div();
-        card.setBorder(new SolidBorder(BORDER_SUBTLE, 0.5f));
-        card.setMarginBottom(12);
-        card.setPadding(0);
+    private String getPaymentRuleDescription(ContractResponse contract) {
+        LocalDate startDate = contract.startDate();
+        String startDateStr = startDate.format(DATE_FORMATTER);
 
-        Table clauseTable = new Table(UnitValue.createPercentArray(new float[]{1})).useAllAvailableWidth();
+        if (contract.paymentFrequency() == null) {
+            return "El primer pago se realizará en la fecha de inicio del contrato (" + startDateStr + "), y los pagos sucesivos el mismo día de cada mes subsiguiente.";
+        }
 
-        Cell headerCell = new Cell()
-                .add(new Paragraph("CLÁUSULA " + number + " — " + title)
-                        .setFont(subtitleFont).setFontSize(9).setFontColor(NAVY_DEEP))
-                .setBorderBottom(new SolidBorder(GOLD_CLASSIC, 0.5f))
-                .setBackgroundColor(IVORY_BG)
-                .setPadding(10);
-        clauseTable.addCell(headerCell);
-
-        Cell contentCell = new Cell()
-                .add(new Paragraph(content)
-                        .setFont(bodyFont).setFontSize(9).setFontColor(TEXT_SOFT)
-                        .setTextAlignment(TextAlignment.JUSTIFIED).setMultipliedLeading(1.5f))
-                .setPadding(12);
-        clauseTable.addCell(contentCell);
-
-        card.add(clauseTable);
-        return card;
+        return switch (contract.paymentFrequency()) {
+            case MONTHLY ->
+                    "El primer pago se realizará en la fecha de inicio del contrato (" + startDateStr + "), " +
+                            "y los pagos sucesivos el mismo día de cada mes subsiguiente.";
+            case BIWEEKLY ->
+                    "El primer pago se realizará en la fecha de inicio del contrato (" + startDateStr + "), " +
+                            "y los pagos sucesivos cada quince (15) días contados a partir de dicha fecha.";
+            case WEEKLY ->
+                    "El primer pago se realizará en la fecha de inicio del contrato (" + startDateStr + "), " +
+                            "y los pagos sucesivos cada siete (7) días contados a partir de dicha fecha.";
+        };
     }
 
-    private Div createClauseCardWithList(String number, String title, String intro, String[] items) {
-        Div card = new Div();
-        card.setBorder(new SolidBorder(BORDER_SUBTLE, 0.5f));
-        card.setMarginBottom(12);
+    private Div createClause(String number, String title, String content) {
+        Div clause = new Div();
+        clause.setMarginBottom(8);
 
-        Table clauseTable = new Table(UnitValue.createPercentArray(new float[]{1})).useAllAvailableWidth();
+        Paragraph header = new Paragraph("CLÁUSULA " + number + ". - " + title + ":")
+                .setFont(boldFont).setFontSize(9).setFontColor(BLACK);
 
-        Cell headerCell = new Cell()
-                .add(new Paragraph("CLÁUSULA " + number + " — " + title)
-                        .setFont(subtitleFont).setFontSize(9).setFontColor(NAVY_DEEP))
-                .setBorderBottom(new SolidBorder(GOLD_CLASSIC, 0.5f))
-                .setBackgroundColor(IVORY_BG)
-                .setPadding(10);
-        clauseTable.addCell(headerCell);
+        Paragraph body = new Paragraph(content)
+                .setFont(regularFont).setFontSize(9).setFontColor(DARK_GRAY)
+                .setTextAlignment(TextAlignment.JUSTIFIED).setMultipliedLeading(1.4f)
+                .setMarginLeft(15);
 
-        Div contentDiv = new Div();
-        contentDiv.add(new Paragraph(intro)
-                .setFont(bodyFont).setFontSize(9).setFontColor(TEXT_SOFT)
-                .setMarginBottom(8));
+        clause.add(header);
+        clause.add(body);
 
-        List list = new List();
-        list.setListSymbol("▹ ");
-        list.setFont(bodyFont);
-        list.setFontSize(9);
-        list.setFontColor(TEXT_SOFT);
-        list.setMarginLeft(20);
+        return clause;
+    }
+
+    private Div createClauseWithList(String number, String title, String intro, String[] items) {
+        Div clause = new Div();
+        clause.setMarginBottom(8);
+
+        Paragraph header = new Paragraph("CLÁUSULA " + number + ". - " + title + ":")
+                .setFont(boldFont).setFontSize(9).setFontColor(BLACK);
+
+        Paragraph introPara = new Paragraph(intro)
+                .setFont(regularFont).setFontSize(9).setFontColor(DARK_GRAY)
+                .setTextAlignment(TextAlignment.JUSTIFIED);
+
+        List list = new List()
+                .setListSymbol("•")
+                .setFont(regularFont)
+                .setFontSize(9)
+                .setFontColor(DARK_GRAY)
+                .setMarginLeft(30);
 
         for (String item : items) {
             list.add(new ListItem(item));
         }
-        contentDiv.add(list);
 
-        Cell contentCell = new Cell().add(contentDiv).setPadding(12);
-        clauseTable.addCell(contentCell);
+        clause.add(header);
+        clause.add(introPara);
+        clause.add(list);
 
-        card.add(clauseTable);
-        return card;
+        return clause;
     }
 
-    private void createDecorativeSeparator(Document document) {
-        Div separator = new Div();
-        separator.setMarginTop(20);
-        separator.setMarginBottom(20);
+    private Div createSignaturesSection(ContractResponse contract) {
+        Div section = new Div();
 
-        Paragraph sepLine = new Paragraph("◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈")
-                .setFont(lightFont).setFontSize(6).setFontColor(GOLD_CLASSIC)
+        Paragraph title = new Paragraph("ACEPTACIÓN")
+                .setFont(boldFont).setFontSize(12).setFontColor(BLACK)
+                .setBorderBottom(new SolidBorder(BLACK, 0.5f))
+                .setPaddingBottom(5)
                 .setTextAlignment(TextAlignment.CENTER);
-        separator.add(sepLine);
-
-        document.add(separator);
-    }
-
-    private void createEnhancedSignatureSection(Document document, ContractResponse contract) {
-        Div sigTitle = new Div();
-        sigTitle.add(new Paragraph("ACEPTACIÓN Y FIRMAS")
-                .setFont(subtitleFont).setFontSize(11).setFontColor(NAVY_DEEP)
-                .setTextAlignment(TextAlignment.CENTER));
-        sigTitle.setBorderBottom(new SolidBorder(GOLD_CLASSIC, 1));
-        sigTitle.setMarginBottom(20);
-        sigTitle.setPaddingBottom(8);
-        document.add(sigTitle);
+        section.add(title);
+        section.add(new Paragraph(" ").setMarginBottom(15));
 
         Table signaturesTable = new Table(UnitValue.createPercentArray(new float[]{48, 48})).useAllAvailableWidth();
-        signaturesTable.setMarginBottom(15);
 
-        signaturesTable.addCell(createPremiumSignatureBlock("ARRENDADOR", contract.getOwnerName()));
-        signaturesTable.addCell(createPremiumSignatureBlock("ARRENDATARIO", contract.getTenantName()));
+        signaturesTable.addCell(createSignatureCell("EL ARRENDADOR", contract.ownerName()));
+        signaturesTable.addCell(createSignatureCell("EL ARRENDATARIO", contract.tenantName()));
 
-        document.add(signaturesTable);
+        section.add(signaturesTable);
+        section.add(new Paragraph(" ").setMarginBottom(15));
 
-        Table legalSeal = new Table(UnitValue.createPercentArray(new float[]{1})).useAllAvailableWidth();
-        legalSeal.setMarginTop(10);
+        Paragraph datePlace = new Paragraph("Cartagena de Indias, " + contract.createdAt().format(DATE_FORMATTER))
+                .setFont(regularFont).setFontSize(9).setFontColor(GRAY)
+                .setTextAlignment(TextAlignment.CENTER);
+        section.add(datePlace);
 
-        Cell sealCell = new Cell()
-                .add(new Paragraph("⬙ ESTE DOCUMENTO ES VÁLIDO LEGALMENTE ⬙")
-                        .setFont(subtitleFont).setFontSize(7).setFontColor(STONE_GRAY)
-                        .setTextAlignment(TextAlignment.CENTER))
-                .add(new Paragraph("Verificación: NST-" + contract.getContractId().toString().substring(0, 8).toUpperCase())
-                        .setFont(lightFont).setFontSize(6).setFontColor(TEXT_LIGHT)
-                        .setTextAlignment(TextAlignment.CENTER))
-                .setBorder(new DashedBorder(GOLD_CLASSIC, 0.5f))
-                .setPadding(8)
-                .setBackgroundColor(IVORY_BG);
-
-        legalSeal.addCell(sealCell);
-        document.add(legalSeal);
+        return section;
     }
 
-    private Cell createPremiumSignatureBlock(String role, String name) {
-        Div block = new Div();
-        block.setBorder(new SolidBorder(BORDER_SUBTLE, 1));
-        block.setBackgroundColor(IVORY_BG);
-        block.setPadding(15);
+    private Cell createSignatureCell(String role, String name) {
+        Div cellDiv = new Div();
+        cellDiv.setMarginBottom(20);
 
-        block.add(new Paragraph(role)
-                .setFont(subtitleFont).setFontSize(8).setFontColor(GOLD_CLASSIC)
-                .setTextAlignment(TextAlignment.CENTER));
+        cellDiv.add(new Paragraph(role).setFont(boldFont).setFontSize(9).setFontColor(GRAY).setTextAlignment(TextAlignment.CENTER));
+        cellDiv.add(new Paragraph(" ").setMarginBottom(25));
 
-        Div signatureLine = new Div();
-        signatureLine.setBorderBottom(new SolidBorder(STONE_GRAY, 0.8f));
-        signatureLine.setWidth(UnitValue.createPercentValue(90));
-        signatureLine.setMarginTop(20); // float
-        signatureLine.setMarginBottom(5); // float
-        signatureLine.setMarginLeft(5); // float (5 puntos, no porcentaje)
-        block.add(signatureLine);
+        SolidLine solidLine = new SolidLine(0.5f);
+        solidLine.setColor(BLACK);
+        LineSeparator line = new LineSeparator(solidLine);
+        line.setWidth(UnitValue.createPercentValue(80));
+        cellDiv.add(line);
 
-        block.add(new Paragraph(name)
-                .setFont(subtitleFont).setFontSize(9).setFontColor(NAVY_DEEP)
-                .setTextAlignment(TextAlignment.CENTER)
-                .setMarginTop(5));
+        cellDiv.add(new Paragraph(name.toUpperCase()).setFont(regularFont).setFontSize(9).setFontColor(BLACK).setTextAlignment(TextAlignment.CENTER).setMarginTop(5));
+        cellDiv.add(new Paragraph("C.C. _________________").setFont(regularFont).setFontSize(8).setFontColor(GRAY).setTextAlignment(TextAlignment.CENTER));
 
-        block.add(new Paragraph("Firma electrónica certificada")
-                .setFont(lightFont).setFontSize(6).setFontColor(TEXT_LIGHT)
-                .setTextAlignment(TextAlignment.CENTER));
-
-        return new Cell().add(block).setBorder(Border.NO_BORDER).setPadding(8);
-    }
-    private void createLegalFooter(Document document, ContractResponse contract) {
-        String verificationCode = "NST-VER-" + contract.getContractId().toString().substring(0, 8).toUpperCase();
-
-        Div footer = new Div();
-        footer.setBorderTop(new SolidBorder(GOLD_CLASSIC, 0.5f));
-        footer.setMarginTop(15);
-        footer.setPaddingTop(12);
-
-        Paragraph legalText = new Paragraph("Documento electrónico generado automáticamente a través de la plataforma NESTLY. " +
-                "Este contrato cumple con los requisitos establecidos en la Ley 527 de 1999 sobre mensajes de datos. " +
-                "Código de verificación: " + verificationCode)
-                .setFont(bodyFont).setFontSize(6).setFontColor(TEXT_LIGHT)
-                .setTextAlignment(TextAlignment.CENTER).setMultipliedLeading(1.3f);
-        footer.add(legalText);
-
-        document.add(footer);
+        return new Cell().add(cellDiv)
+                .setBorder(Border.NO_BORDER)
+                .setPadding(10);
     }
 
-    // ==================== MÉTODOS DE UTILIDAD ====================
+    private String calculateDuration(ContractResponse contract) {
+        LocalDate start = contract.startDate();
+        LocalDate end = contract.endDate();
+        PaymentFrequency frequency = contract.paymentFrequency();
 
-    private String calculateDuration(LocalDate start, LocalDate end) {
-        long months = ChronoUnit.MONTHS.between(start, end);
-        if (months == 0) return "Un mes";
-        if (months == 1) return "Un (1) mes";
-        if (months < 12) return months + " meses";
-        long years = months / 12;
-        long remainingMonths = months % 12;
-        if (remainingMonths == 0) return years + (years == 1 ? " año" : " años");
-        return years + (years == 1 ? " año" : " años") + " y " + remainingMonths + " meses";
+        long daysBetween = ChronoUnit.DAYS.between(start, end);
+
+        return switch (frequency) {
+            case MONTHLY -> {
+                long months = ChronoUnit.MONTHS.between(start, end);
+                yield months == 1 ? "1 mes" : months + " meses";
+            }
+            case BIWEEKLY -> {
+                long quincenas = daysBetween / 15;
+                yield quincenas + " quincenas (" + (quincenas / 2) + " meses)";
+            }
+            case WEEKLY -> {
+                long semanas = daysBetween / 7;
+                yield semanas + " semanas (" + (semanas / 4) + " meses)";
+            }
+        };
     }
 
     private String formatCurrency(BigDecimal amount) {
         if (amount == null) return "—";
         return "$ " + String.format(Locale.forLanguageTag("es-CO"), "%,.0f", amount) + " COP";
-    }
-
-    private String translateStatus(String status) {
-        switch (status) {
-            case "PAYMENT_PENDING": return "PENDIENTE DE PAGO";
-            case "ACTIVE": return "ACTIVO ✓";
-            case "CANCELLED": return "CANCELADO";
-            case "CANCELLATION_PENDING": return "CANCELACIÓN PENDIENTE";
-            case "TERMINATED": return "TERMINADO";
-            case "EXPIRED": return "EXPIRADO";
-            default: return status;
-        }
-    }
-
-    private DeviceRgb getStatusColor(ContractStatus status) {
-        switch (status.name()) {
-            case "ACTIVE": return STATUS_ACTIVE;
-            case "PAYMENT_PENDING":
-            case "CANCELLATION_PENDING": return STATUS_PENDING;
-            case "EXPIRED":
-            case "CANCELLED":
-            case "TERMINATED": return STATUS_DANGER;
-            default: return STATUS_MUTED;
-        }
-    }
-
-    // ==================== HANDLERS DE EVENTOS ====================
-
-    private static class GoldSidebarHandler implements IEventHandler {
-        @Override
-        public void handleEvent(Event event) {
-            PdfDocumentEvent docEvent = (PdfDocumentEvent) event;
-            PdfPage page = docEvent.getPage();
-            PdfCanvas canvas = new PdfCanvas(page);
-            Rectangle pageSize = page.getPageSize();
-
-            canvas.setFillColor(NAVY_PRIMARY)
-                    .rectangle(0, 0, SIDEBAR_NAVY_WIDTH, pageSize.getHeight())
-                    .fill();
-
-            canvas.setFillColor(GOLD_CLASSIC)
-                    .rectangle(SIDEBAR_NAVY_WIDTH, 0, SIDEBAR_GOLD_WIDTH, pageSize.getHeight())
-                    .fill();
-
-            canvas.release();
-        }
-    }
-
-    private static class PremiumFooterHandler implements IEventHandler {
-        private final ContractResponse contract;
-        private final PdfDocument pdfDoc;
-
-        public PremiumFooterHandler(ContractResponse contract, PdfDocument pdfDoc) {
-            this.contract = contract;
-            this.pdfDoc = pdfDoc;
-        }
-
-        @Override
-        public void handleEvent(Event event) {
-            PdfDocumentEvent docEvent = (PdfDocumentEvent) event;
-            PdfPage page = docEvent.getPage();
-            int pageNum = pdfDoc.getPageNumber(page);
-            int totalPages = pdfDoc.getNumberOfPages();
-
-            PdfCanvas canvas = new PdfCanvas(page);
-            Rectangle pageSize = page.getPageSize();
-
-            try {
-                float yPos = pageSize.getBottom() + MARGIN_BOTTOM - 30;
-
-                if (pageNum % 2 != 0) {
-                    canvas.beginText()
-                            .setFontAndSize(PdfFontFactory.createFont("Helvetica"), 6)
-                            .setColor(STONE_GRAY, true)
-                            .moveTo(MARGIN_LEFT, yPos)
-                            .showText("NESTLY GESTIÓN INMOBILIARIA S.A.S. | NIT: 901.234.567-8")
-                            .moveTo(MARGIN_LEFT, yPos - 8)
-                            .showText("Calle 35 # 4-85, Edificio Fontana, Oficina 702 - Cartagena")
-                            .moveTo(MARGIN_LEFT, yPos - 16)
-                            .showText("Tel: +57 (605) 678 9012 | Email: legal@nestly.com.co")
-                            .endText();
-                } else {
-                    canvas.beginText()
-                            .setFontAndSize(PdfFontFactory.createFont("Helvetica-Oblique"), 5)
-                            .setColor(TEXT_LIGHT, true)
-                            .moveTo(MARGIN_LEFT, yPos)
-                            .showText("CONFIDENCIAL: Este documento contiene información legalmente vinculante.")
-                            .moveTo(MARGIN_LEFT, yPos - 8)
-                            .showText("Código de verificación: NST-" + contract.getContractId().toString().substring(0, 8))
-                            .endText();
-                }
-
-                float pageWidth = pageSize.getWidth();
-                canvas.beginText()
-                        .setFontAndSize(PdfFontFactory.createFont("Helvetica"), 7)
-                        .setColor(GOLD_CLASSIC, true)
-                        .moveTo(pageWidth / 2 - 30, yPos)
-                        .showText("Página " + pageNum + " de " + totalPages)
-                        .endText();
-
-            } catch (IOException e) {
-                throw new RuntimeException("Error al crear el footer", e);
-            }
-
-            canvas.release();
-        }
-    }
-
-    private static class WatermarkHandler implements IEventHandler {
-        @Override
-        public void handleEvent(Event event) {
-            PdfDocumentEvent docEvent = (PdfDocumentEvent) event;
-            PdfPage page = docEvent.getPage();
-            PdfCanvas canvas = new PdfCanvas(page);
-            Rectangle pageSize = page.getPageSize();
-
-            try {
-                PdfExtGState gState = new PdfExtGState();
-                gState.setFillOpacity(0.03f);
-
-                canvas.saveState()
-                        .setExtGState(gState)
-                        .setFillColor(NAVY_PRIMARY)
-                        .beginText()
-                        .setFontAndSize(PdfFontFactory.createFont("Times-Bold"), 70)
-                        .moveTo(pageSize.getWidth() / 2 - 70, pageSize.getHeight() / 2 - 30)
-                        .showText("NESTLY")
-                        .endText()
-                        .restoreState();
-            } catch (IOException e) {
-                // Silently fail for watermark
-            }
-
-            canvas.release();
-        }
     }
 }

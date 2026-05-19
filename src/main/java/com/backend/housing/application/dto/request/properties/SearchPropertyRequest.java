@@ -3,9 +3,11 @@ package com.backend.housing.application.dto.request.properties;
 import com.backend.housing.domain.entity.properties.enums.RentModality;
 import com.backend.housing.domain.entity.properties.enums.TypeProperty;
 import jakarta.validation.constraints.Positive;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
+@Setter
 public class SearchPropertyRequest {
 
     private String city;

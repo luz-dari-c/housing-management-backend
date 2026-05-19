@@ -94,13 +94,13 @@ public class RentalRequestController {
     @PostMapping("/{id}/accept")
     public ResponseEntity<AcceptRequestResponse> acceptRequest(@PathVariable String id) {
         User user = getAuthenticatedUser();
-        RentalContract contract = acceptRentalRequestUseCase.execute(
+        AcceptRequestResponse response = acceptRentalRequestUseCase.execute(
                 rentalRequestMapper.toRequestId(id),
                 user.getId()
         );
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new AcceptRequestResponse(contract.getId().getValue()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
     @Operation(summary = "Rechazar una solicitud")
     @PostMapping("/{id}/reject")

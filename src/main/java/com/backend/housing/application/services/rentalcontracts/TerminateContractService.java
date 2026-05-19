@@ -3,6 +3,7 @@ package com.backend.housing.application.services.rentalcontracts;
 import com.backend.housing.application.commands.rentalcontracts.TerminateContractCommand;
 import com.backend.housing.domain.entity.rentalcontracts.RentalContract;
 import com.backend.housing.domain.entity.users.User;
+import com.backend.housing.domain.ports.in.notifications.NotifyContractTerminatedUseCase;
 import com.backend.housing.domain.ports.in.rentalcontracts.TerminateContractUseCase;
 import com.backend.housing.domain.ports.out.external.PropertyServicePort;
 import com.backend.housing.domain.ports.out.properties.UserValidationPort;
@@ -19,13 +20,17 @@ public class TerminateContractService implements TerminateContractUseCase {
     private final RentalContractRepository contractRepository;
     private final PropertyServicePort propertyService;
     private final UserValidationPort userValidationPort;
+    private final NotifyContractTerminatedUseCase notifyContractTerminatedUseCase;
+
 
     public TerminateContractService(RentalContractRepository contractRepository,
                                     PropertyServicePort propertyService,
-                                    UserValidationPort userValidationPort) {
+                                    UserValidationPort userValidationPort,
+                                    NotifyContractTerminatedUseCase notifyContractTerminatedUseCase) {
         this.contractRepository = contractRepository;
         this.propertyService = propertyService;
         this.userValidationPort = userValidationPort;
+        this.notifyContractTerminatedUseCase = notifyContractTerminatedUseCase;
     }
 
     @Override
@@ -45,6 +50,11 @@ public class TerminateContractService implements TerminateContractUseCase {
 
         propertyService.markAsAvailable(contract.getPropertyId());
 
+        notifyContractTerminatedUseCase.execute(
+                terminatedContract.getTenantId(),
+                terminatedContract.getOwnerId(),
+                terminatedContract.getId()
+        );
         return terminatedContract;
     }
 

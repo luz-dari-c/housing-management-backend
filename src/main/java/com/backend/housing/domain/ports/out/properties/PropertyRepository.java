@@ -5,7 +5,10 @@ import com.backend.housing.domain.entity.properties.Property;
 import com.backend.housing.domain.entity.properties.enums.PropertyStatus;
 import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 import com.backend.housing.domain.valueobjects.Pagination;
+import com.backend.housing.infrastructure.persistence.entities.properties.PropertyEntity;
+import org.springframework.data.domain.Page;
 
+import java.awt.print.Pageable;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,11 +20,11 @@ public interface PropertyRepository {
 
     List<Property> findAll(Pagination pagination);
 
-
     List<Property> findByPropertyStatus(PropertyStatus status, Pagination pagination);
 
     List<Property> findByOwnerIdAndPropertyStatus(Long ownerId, PropertyStatus status, Pagination pagination);
     List<Property> findByOwnerId(Long ownerId, Pagination pagination);
+    List<Property> findByOwnerIdAndPropertyStatusNot(Long ownerId, PropertyStatus status, Pagination pagination);
 
 
 }

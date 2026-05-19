@@ -19,5 +19,7 @@ public record PaymentReceiptResponse(
         String checkoutUrl,
         String tenantName,
         String ownerName,
-        String propertyTitle  
+        String propertyTitle,
+        String period,
+        String message
 ) {}

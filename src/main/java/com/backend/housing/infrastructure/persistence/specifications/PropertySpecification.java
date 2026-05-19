@@ -14,9 +14,11 @@ public class PropertySpecification {
     private PropertySpecification() {}
 
     public static Specification<PropertyEntity> withFilters(SearchPropertyQuery query) {
-
         return (root, queryBuilder, cb) -> {
 
+
+            System.out.println(">>> city recibido: '" + query.getCity() + "'");
+            System.out.println(">>> hasCity: " + query.hasCity());
             List<Predicate> predicates = new ArrayList<>();
 
             if (query.hasCity()) {
@@ -30,32 +32,21 @@ public class PropertySpecification {
 
             if (query.hasMinPrice()) {
                 predicates.add(
-                        cb.greaterThanOrEqualTo(
-                                root.get("rentPrice"),
-                                query.getMinPrice()
-                        )
+                        cb.greaterThanOrEqualTo(root.get("rentPrice"), query.getMinPrice())
                 );
             }
 
             if (query.hasMaxPrice()) {
                 predicates.add(
-                        cb.lessThanOrEqualTo(
-                                root.get("rentPrice"),
-                                query.getMaxPrice()
-                        )
+                        cb.lessThanOrEqualTo(root.get("rentPrice"), query.getMaxPrice())
                 );
             }
 
             if (query.hasTypeProperty()) {
                 predicates.add(
-                        cb.equal(
-                                root.get("typeProperty"),
-                                query.getTypeProperty()
-                        )
+                        cb.equal(root.get("typeProperty"), query.getTypeProperty())
                 );
             }
-
-
 
             if (query.hasBedrooms()) {
                 predicates.add(
@@ -68,30 +59,20 @@ public class PropertySpecification {
 
             if (query.hasPetsAllowed()) {
                 predicates.add(
-                        cb.equal(
-                                root.get("petsAllowed"),
-                                query.getPetsAllowed()
-                        )
+                        cb.equal(root.get("petsAllowed"), query.getPetsAllowed())
                 );
             }
 
             if (query.hasFurnished()) {
                 predicates.add(
-                        cb.equal(
-                                root.get("furnished"),
-                                query.getFurnished()
-                        )
+                        cb.equal(root.get("furnished"), query.getFurnished())
                 );
             }
 
             predicates.add(
-                    cb.equal(
-                            root.get("propertyStatus"),
-                            PropertyStatus.PUBLISHED
-                    )
+                    cb.equal(root.get("propertyStatus"), PropertyStatus.PUBLISHED)
             );
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-    }
-}
+    }}

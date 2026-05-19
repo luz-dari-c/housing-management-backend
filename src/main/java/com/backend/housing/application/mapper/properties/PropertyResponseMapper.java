@@ -16,6 +16,9 @@ import java.util.stream.Collectors;
 public class PropertyResponseMapper {
 
     public CreatePropertyResponse toCreateResponse(Property property) {
+        String message = "Propiedad creada exitosamente";
+        String nextStep = "Publica la propiedad para que aparezca en los resultados de búsqueda";
+
         return new CreatePropertyResponse(
                 property.getId().getValue(),
                 property.getTitle(),
@@ -28,12 +31,13 @@ public class PropertyResponseMapper {
                 property.getOwnerId(),
                 property.getCreatedAt(),
                 property.getImageUrls(),
-                property.getAddress()
+                property.getAddress(),
+                message,
+                nextStep
         );
     }
 
     public PropertyDetailResponse toDetailResponse(Property property) {
-
         RentalTerms rentalTerms = property.getRentalTerms();
 
         Boolean petsAllowed = rentalTerms != null ? rentalTerms.isPetsAllowed() : null;
@@ -81,29 +85,30 @@ public class PropertyResponseMapper {
                 .collect(Collectors.toList());
     }
 
-
     public UpdatePropertyResponse toUpdateResponse(Property property) {
+        String message = "Propiedad actualizada exitosamente";
+        String nextStep = "Los cambios se verán reflejados inmediatamente en la plataforma";
 
         String street = null, city = null, state = null, country = null, postalCode = null;
         if (property.getAddress() != null) {
-            street     = property.getAddress().getStreet();
-            city       = property.getAddress().getCity();
-            state      = property.getAddress().getState();
-            country    = property.getAddress().getCountry();
+            street = property.getAddress().getStreet();
+            city = property.getAddress().getCity();
+            state = property.getAddress().getState();
+            country = property.getAddress().getCountry();
             postalCode = property.getAddress().getPostalCode();
         }
 
         BigDecimal latitude = null, longitude = null;
         if (property.getCoordinates() != null) {
-            latitude  = property.getCoordinates().getLatitud();
+            latitude = property.getCoordinates().getLatitud();
             longitude = property.getCoordinates().getLongitud();
         }
 
         Boolean petsAllowed = null;
-        Boolean furnished   = null;
+        Boolean furnished = null;
         if (property.getRentalTerms() != null) {
             petsAllowed = property.getRentalTerms().isPetsAllowed();
-            furnished   = property.getRentalTerms().isFurnished();
+            furnished = property.getRentalTerms().isFurnished();
         }
 
         return new UpdatePropertyResponse(
@@ -122,7 +127,9 @@ public class PropertyResponseMapper {
                 property.getImageUrls(),
                 street, city, state, country, postalCode,
                 latitude, longitude,
-                property.getUpdatedAt()
+                property.getUpdatedAt(),
+                message,
+                nextStep
         );
     }
 }

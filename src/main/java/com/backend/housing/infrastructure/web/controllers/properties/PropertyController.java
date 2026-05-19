@@ -37,15 +37,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -138,7 +130,7 @@ public class PropertyController {
     @Operation(summary = "Buscar propiedades con filtros")
     @GetMapping("/search")
     public ResponseEntity<List<PropertySummaryResponse>> searchProperties(
-            @Valid SearchPropertyRequest request) {
+            @Valid @ModelAttribute SearchPropertyRequest request) {
 
         SearchPropertyQuery query = SearchPropertyRequestMapper.toQuery(request);
         List<Property> properties = searchPropertyUseCase.searchProperties(query);
@@ -152,9 +144,14 @@ public class PropertyController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) PropertyStatus status) {
 
+        if (status == PropertyStatus.DELETED) {
+            return ResponseEntity.badRequest().build();
+        }
+
         List<Property> properties = getMyPropertiesUseCase.getMyProperties(
                 Pagination.of(page, size), status
         );
+
         return ResponseEntity.ok(propertyResponseMapper.toSummaryResponseList(properties));
     }
 

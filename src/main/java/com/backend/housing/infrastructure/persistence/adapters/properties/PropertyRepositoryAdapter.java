@@ -125,4 +125,20 @@ public class PropertyRepositoryAdapter  implements PropertyRepository {
                 .toList();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<Property> findByOwnerIdAndPropertyStatusNot(Long ownerId, PropertyStatus status, Pagination pagination) {
+
+        Pageable pageable = PageRequest.of(
+                pagination.getPage(),
+                pagination.getSize()
+        );
+
+        return jpaPropertyRepository
+                .findByOwnerIdAndPropertyStatusNot(ownerId, status, pageable)
+                .stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
 }

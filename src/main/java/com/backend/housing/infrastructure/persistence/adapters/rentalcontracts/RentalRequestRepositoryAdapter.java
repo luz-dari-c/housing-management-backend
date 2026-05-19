@@ -65,7 +65,7 @@ public class RentalRequestRepositoryAdapter implements RentalRequestRepository {
 
     @Override
     public List<RentalRequest> findPendingByPropertyId(PropertyId propertyId) {
-        return jpaRepository.findPendingByPropertyId(propertyId.getValue())
+        return jpaRepository.findPendingByPropertyId(propertyId.asString())
                 .stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
