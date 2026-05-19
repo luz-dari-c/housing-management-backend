@@ -38,7 +38,6 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
                         .requestMatchers(
@@ -49,9 +48,10 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
 
-                        .requestMatchers("/api/auth/register").permitAll()
-                        .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/api/auth/logout").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/forgot-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/verify-code").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/reset-password").permitAll()
@@ -61,24 +61,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/notifications/test/expire").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/notifications/test/reminder").permitAll()
 
-                        .requestMatchers(HttpMethod.GET, "/api/properties").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/properties/*").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/properties/search").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/properties/**").permitAll()
 
                         .requestMatchers("/images/**").permitAll()
 
-                        .requestMatchers(HttpMethod.POST, "/api/rental-requests").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/rental-requests/**").authenticated()
-                        .requestMatchers(HttpMethod.POST, "/api/rental-requests/**").authenticated()
-
-                        .requestMatchers(HttpMethod.GET, "/api/payments/receipt/*").authenticated()
-
-                        .requestMatchers(HttpMethod.GET, "/api/notifications").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/notifications/unread").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/notifications/unread/count").authenticated()
-                        .requestMatchers(HttpMethod.PATCH, "/api/notifications/*/read").authenticated()
-
                         .requestMatchers("/profile/**").authenticated()
+                        .requestMatchers("/chat/**").authenticated()
+                        .requestMatchers("/api/rental-requests/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/payments/receipt/*").authenticated()
+                        .requestMatchers("/api/notifications/**").authenticated()
 
                         .anyRequest().authenticated()
                 )

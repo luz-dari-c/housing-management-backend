@@ -36,10 +36,11 @@ public class RegisterRequest {
     @Positive(message = "La edad debe ser un número positivo")
     private Integer edad;
 
+    @NotBlank(message = "La contraseña es obligatoria")
     @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
     private String password;
 
-    // NUEVO CAMPO
-    @Size(min = 7, max = 10, message = "El número de teléfono debe tener entre 7 y 10 caracteres")
+    @NotBlank(message = "El número de teléfono es obligatorio")
+    @Size(min = 7, max = 15, message = "El número de teléfono debe tener entre 7 y 15 caracteres")
     private String phoneNumber;
 }

@@ -1,6 +1,7 @@
 package com.backend.housing.domain.ports.in.users;
 
+import com.backend.housing.application.dto.response.auth.AuthResponse;
 
 public interface LoginUseCase {
-    String login (String email, String password);
+    AuthResponse login(String email, String password);
 }
