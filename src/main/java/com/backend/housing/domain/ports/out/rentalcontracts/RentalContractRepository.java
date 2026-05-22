@@ -2,6 +2,7 @@ package com.backend.housing.domain.ports.out.rentalcontracts;
 
 
 import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
+import com.backend.housing.domain.entity.rentalcontracts.Enums.ContractStatus;
 import com.backend.housing.domain.entity.rentalcontracts.RentalContract;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.ContractId;
 
@@ -20,5 +21,6 @@ public interface RentalContractRepository {
     boolean existsActiveByPropertyId(PropertyId propertyId);
     List<RentalContract> findActiveContracts();
     List<RentalContract> findPendingCancellationsDue(LocalDate date);
+    List<RentalContract> findByStatusAndStartDateBeforeOrEqual(ContractStatus status, LocalDate date);
 
 }

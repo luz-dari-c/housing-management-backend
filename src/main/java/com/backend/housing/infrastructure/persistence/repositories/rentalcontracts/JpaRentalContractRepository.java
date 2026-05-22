@@ -34,4 +34,8 @@ public interface JpaRentalContractRepository extends JpaRepository<RentalContrac
             "WHERE c.status = 'CANCELLATION_PENDING' " +
             "AND c.effectiveCancellationDate <= :date")
     List<RentalContractEntity> findPendingCancellationsDue(@Param("date") LocalDate date);
+
+    @Query("SELECT c FROM RentalContractEntity c WHERE c.status = :status AND c.startDate <= :date")
+    List<RentalContractEntity> findByStatusAndStartDateBeforeOrEqual(@Param("status") String status,
+                                                                     @Param("date") LocalDate date);
 }

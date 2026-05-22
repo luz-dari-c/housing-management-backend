@@ -20,8 +20,8 @@ public class PropertyRequestMapper {
     private Coordinates mapFromRequest(CoordinatesRequest request) {
         if (request == null) return null;
         return new Coordinates(
-                request.getLongitude(),
-                request.getLatitude()
+                request.getLongitud(),
+                request.getLatitud()
         );
     }
 

@@ -16,6 +16,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 public class HandlePaymentWebhookService implements HandlePaymentWebhookUseCase {
 
@@ -35,84 +37,49 @@ public class HandlePaymentWebhookService implements HandlePaymentWebhookUseCase 
     @Transactional
     public void execute(HandlePaymentWebhookCommand command) {
 
-        Payment payment = getValidPayment(command);
+        Payment payment = paymentRepository.findByCheckoutSessionId(command.getCheckoutSessionId())
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Pago no encontrado para la sesión: " + command.getCheckoutSessionId()));
 
         if (payment.getStatus() == PaymentStatus.SUCCEEDED) {
             return;
         }
 
-        ensurePaymentIsPending(payment);
+        if (payment.getStatus() != PaymentStatus.PENDING) {
+            throw new IllegalStateException(
+                    "El pago no puede ser exitoso. Estado actual: " + payment.getStatus());
+        }
 
         payment.markAsSucceeded();
         paymentRepository.save(payment);
 
-        if (payment.getReferenceType() != PaymentReferenceType.RENTAL) {
-            return;
-        }
+        RentalContract contract = contractRepository.findById(ContractId.of(payment.getReferenceId()))
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Contrato no encontrado: " + payment.getReferenceId()));
 
-        RentalContract contract = getContract(payment);
-
-        processContractPayment(contract, payment, command);
-    }
-
-    private Payment getValidPayment(HandlePaymentWebhookCommand command) {
-        return paymentRepository.findByCheckoutSessionId(command.getCheckoutSessionId())
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Payment not found for session: " + command.getCheckoutSessionId()));
-    }
-
-    private void ensurePaymentIsPending(Payment payment) {
-        if (payment.getStatus() != PaymentStatus.PENDING) {
-            throw new IllegalStateException(
-                    "Payment cannot be succeeded. Current status: " + payment.getStatus());
-        }
-    }
-
-    private RentalContract getContract(Payment payment) {
-        return contractRepository.findById(
-                        ContractId.of(payment.getReferenceId()))
-                .orElseThrow(() ->
-                        new IllegalArgumentException(
-                                "Rental contract not found: " + payment.getReferenceId()));
-    }
-
-    private void processContractPayment(RentalContract contract,
-                                        Payment payment,
-                                        HandlePaymentWebhookCommand command) {
-
-        if (contract.getStatus() == ContractStatus.PAYMENT_PENDING) {
-
-            contract.activate(command.getPaymentConfirmedDate());
-            contractRepository.save(contract);
-
-            eventPublisher.publishEvent(
-                    new ContractActivatedEvent(
-                            contract.getId(),
-                            contract.getTenantId(),
-                            contract.getOwnerId()
-                    )
-            );
-
-        } else if (contract.getStatus() == ContractStatus.ACTIVE ||
-                contract.getStatus() == ContractStatus.CANCELLATION_PENDING) {
-
-            contract.renewPaymentPeriod(command.getPaymentConfirmedDate());
-            contractRepository.save(contract);
-
-            eventPublisher.publishEvent(
-                    new PaymentReceivedEvent(
-                            contract.getId(),
-                            contract.getTenantId(),
-                            contract.getOwnerId(),
-                            payment.getPeriod()
-                    )
-            );
-
-        } else {
-            throw new IllegalStateException(
-                    "Cannot process payment for contract with status: "
-                            + contract.getStatus());
+        if (payment.getReferenceType() == PaymentReferenceType.RENTAL) {
+            if (contract.getStatus() == ContractStatus.PAYMENT_PENDING) {
+                contract.activate(command.getPaymentConfirmedDate());
+                contractRepository.save(contract);
+                eventPublisher.publishEvent(new ContractActivatedEvent(
+                        contract.getId(),
+                        contract.getTenantId(),
+                        contract.getOwnerId()
+                ));
+            } else if (contract.getStatus() == ContractStatus.ACTIVE ||
+                    contract.getStatus() == ContractStatus.CANCELLATION_PENDING) {
+                contract.renewPaymentPeriod(command.getPaymentConfirmedDate());
+                contractRepository.save(contract);
+                eventPublisher.publishEvent(new PaymentReceivedEvent(
+                        contract.getId(),
+                        contract.getTenantId(),
+                        contract.getOwnerId(),
+                        payment.getPeriod()
+                ));
+            } else {
+                throw new IllegalStateException(
+                        "No se puede procesar el pago para el contrato con estado: " + contract.getStatus());
+            }
         }
     }
 }

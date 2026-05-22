@@ -115,11 +115,30 @@ public class RentalContract {
 
     public void activate(LocalDate paymentConfirmedDate) {
         if (status != ContractStatus.PAYMENT_PENDING) {
-            throw new IllegalStateException("Contract cannot be activated from status: " + status);
+            throw new IllegalStateException("El contrato no se puede activar desde el estado: " + status);
         }
-        this.status = ContractStatus.ACTIVE;
+
         this.actualStartDate = this.period.getStartDate();
 
+        // Si el pago se hizo antes de la fecha de inicio, va a estado intermedio
+        if (paymentConfirmedDate.isBefore(this.period.getStartDate())) {
+            this.status = ContractStatus.PAID_NOT_STARTED;
+        } else {
+            this.status = ContractStatus.ACTIVE;
+            this.paymentDueDate = switch (paymentFrequency) {
+                case WEEKLY -> this.period.getStartDate().plusWeeks(1);
+                case BIWEEKLY -> this.period.getStartDate().plusWeeks(2);
+                case MONTHLY -> this.period.getStartDate().plusMonths(1);
+            };
+        }
+    }
+
+    public void startContract() {
+        if (status != ContractStatus.PAID_NOT_STARTED) {
+            throw new IllegalStateException("Solo se pueden iniciar contratos en estado PAID_NOT_STARTED. Estado actual: " + status);
+        }
+
+        this.status = ContractStatus.ACTIVE;
         this.paymentDueDate = switch (paymentFrequency) {
             case WEEKLY -> this.period.getStartDate().plusWeeks(1);
             case BIWEEKLY -> this.period.getStartDate().plusWeeks(2);
@@ -129,7 +148,7 @@ public class RentalContract {
 
     public void renewPaymentPeriod(LocalDate newPaymentConfirmedDate) {
         if (status != ContractStatus.ACTIVE && status != ContractStatus.CANCELLATION_PENDING) {
-            throw new IllegalStateException("Only ACTIVE or CANCELLATION_PENDING contracts can renew payment period");
+            throw new IllegalStateException("Solo los contratos ACTIVOS o con CANCELACIÓN PENDIENTE pueden renovar período de pago");
         }
 
         this.paymentDueDate = switch (paymentFrequency) {
@@ -140,19 +159,20 @@ public class RentalContract {
     }
 
     public void cancelImmediately() {
-        if (status != ContractStatus.PAYMENT_PENDING) {
+        if (status != ContractStatus.PAYMENT_PENDING && status != ContractStatus.PAID_NOT_STARTED) {
             throw new IllegalStateException(
-                    "cancelImmediately() solo aplica a contratos en PAYMENT_PENDING. Estado actual: " + status
+                    "cancelImmediately() solo aplica a contratos en PAYMENT_PENDING o PAID_NOT_STARTED. Estado actual: " + status
             );
         }
         this.status = ContractStatus.CANCELLED;
         this.terminatedAt = LocalDateTime.now();
     }
 
+
     public void scheduleCancellation(LocalDate effectiveDate) {
         if (status != ContractStatus.ACTIVE) {
             throw new IllegalStateException(
-                    "scheduleCancellation() solo aplica a contratos ACTIVE. Estado actual: " + status
+                    "scheduleCancellation() solo aplica a contratos ACTIVOS. Estado actual: " + status
             );
         }
         Objects.requireNonNull(effectiveDate, "La fecha efectiva de cancelación no puede ser nula");
@@ -175,7 +195,7 @@ public class RentalContract {
 
     public void terminate() {
         if (status != ContractStatus.ACTIVE) {
-            throw new IllegalStateException("Only active contracts can be terminated");
+            throw new IllegalStateException("Solo los contratos activos pueden ser finalizados");
         }
         this.status = ContractStatus.TERMINATED;
         this.terminatedAt = LocalDateTime.now();
@@ -183,7 +203,7 @@ public class RentalContract {
 
     public void expire() {
         if (status != ContractStatus.ACTIVE && status != ContractStatus.CANCELLATION_PENDING) {
-            throw new IllegalStateException("Contract cannot expire from status: " + status);
+            throw new IllegalStateException("El contrato no puede expirar desde el estado: " + status);
         }
         this.status = ContractStatus.EXPIRED;
         this.terminatedAt = LocalDateTime.now();
@@ -194,7 +214,9 @@ public class RentalContract {
     }
 
     public boolean isCancellable() {
-        return status == ContractStatus.PAYMENT_PENDING || status == ContractStatus.ACTIVE;
+        return status == ContractStatus.PAYMENT_PENDING ||
+                status == ContractStatus.PAID_NOT_STARTED ||
+                status == ContractStatus.ACTIVE;
     }
 
     public boolean requiresPayment() {
@@ -212,7 +234,7 @@ public class RentalContract {
 
     private void validateUsers() {
         if (tenantId.equals(ownerId)) {
-            throw new IllegalArgumentException("Tenant and owner cannot be the same user");
+            throw new IllegalArgumentException("El arrendatario y el propietario no pueden ser la misma persona");
         }
     }
 

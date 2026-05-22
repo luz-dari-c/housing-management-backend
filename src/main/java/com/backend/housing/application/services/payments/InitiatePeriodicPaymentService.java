@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class InitiatePeriodicPaymentService implements InitiatePeriodicPaymentUseCase {
@@ -42,6 +43,8 @@ public class InitiatePeriodicPaymentService implements InitiatePeriodicPaymentUs
     public String execute(ContractId contractId, Long tenantId) {
 
         RentalContract contract = getValidatedContract(contractId, tenantId);
+
+        validateCanPayNextPeriod(contract);
 
         String period = resolveCurrentPeriod(contract);
 
@@ -70,6 +73,57 @@ public class InitiatePeriodicPaymentService implements InitiatePeriodicPaymentUs
         }
 
         return contract;
+    }
+
+    private void validateCanPayNextPeriod(RentalContract contract) {
+        LocalDate paymentDueDate = contract.getPaymentDueDate();
+        if (paymentDueDate == null) {
+            throw new IllegalStateException("El contrato no tiene fecha de pago configurada");
+        }
+
+        String currentPeriod = getCurrentPeriod(contract, paymentDueDate);
+        boolean currentPeriodPaid = paymentRepository.existsByReferenceIdAndPeriod(
+                contract.getId().getValue(), currentPeriod);
+
+        if (!currentPeriodPaid) {
+            throw new IllegalStateException("No puedes pagar el siguiente período porque el período actual aún no ha sido pagado");
+        }
+
+        int advanceDays = switch (contract.getPaymentFrequency()) {
+            case MONTHLY -> 10;
+            case BIWEEKLY -> 5;
+            case WEEKLY -> 3;
+        };
+
+        LocalDate today = LocalDate.now();
+        LocalDate enableDate = paymentDueDate.minusDays(advanceDays);
+
+        if (today.isBefore(enableDate)) {
+            long daysToWait = ChronoUnit.DAYS.between(today, enableDate);
+            String frecuenciaTexto = switch (contract.getPaymentFrequency()) {
+                case MONTHLY -> "mensuales";
+                case BIWEEKLY -> "quincenales";
+                case WEEKLY -> "semanales";
+            };
+            throw new IllegalStateException(
+                    "El pago del siguiente período se habilitará en " + daysToWait + " días. " +
+                            "Para pagos " + frecuenciaTexto + " puedes pagar " + advanceDays + " días antes del vencimiento."
+            );
+        }
+    }
+
+    private String getCurrentPeriod(RentalContract contract, LocalDate paymentDueDate) {
+        return switch (contract.getPaymentFrequency()) {
+            case MONTHLY -> paymentDueDate.minusMonths(1).format(DateTimeFormatter.ofPattern("yyyy-MM"));
+            case BIWEEKLY -> {
+                int weekOfYear = paymentDueDate.minusWeeks(2).getDayOfYear() / 14;
+                yield paymentDueDate.getYear() + "-W" + weekOfYear;
+            }
+            case WEEKLY -> {
+                LocalDate weekStart = paymentDueDate.minusWeeks(1).minusDays(6);
+                yield weekStart.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + "_week";
+            }
+        };
     }
 
     private String resolveCurrentPeriod(RentalContract contract) {

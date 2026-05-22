@@ -9,31 +9,36 @@ import com.backend.housing.domain.ports.in.rentalcontracts.CancelContractUseCase
 import com.backend.housing.domain.ports.out.external.PropertyServicePort;
 import com.backend.housing.domain.ports.out.properties.UserValidationPort;
 import com.backend.housing.domain.ports.out.rentalcontracts.RentalContractRepository;
+import com.backend.housing.domain.ports.out.users.UserRoleServicePort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 @Service
 @Transactional
 public class CancelContractService implements CancelContractUseCase {
 
-    private static final int MINIMUM_NOTICE_DAYS = 30;
+    private static final int OWNER_CANCELLATION_DAYS = 30;
 
     private final RentalContractRepository contractRepository;
     private final PropertyServicePort propertyService;
     private final UserValidationPort userValidationPort;
+    private final UserRoleServicePort userRoleServicePort;
     private final NotifyContractCancelledUseCase notifyContractCancelled;
 
     public CancelContractService(RentalContractRepository contractRepository,
                                  PropertyServicePort propertyService,
                                  UserValidationPort userValidationPort,
+                                 UserRoleServicePort userRoleServicePort,
                                  NotifyContractCancelledUseCase notifyContractCancelled) {
         this.contractRepository = contractRepository;
         this.propertyService = propertyService;
         this.userValidationPort = userValidationPort;
+        this.userRoleServicePort = userRoleServicePort;
         this.notifyContractCancelled = notifyContractCancelled;
     }
 
@@ -48,25 +53,42 @@ public class CancelContractService implements CancelContractUseCase {
         validateAccess(contract, user.getId());
         validateCancellable(contract);
 
+        // Contratos sin pagos o no iniciados se cancelan inmediatamente
         if (contract.getStatus() == ContractStatus.PAYMENT_PENDING) {
             return cancelImmediately(contract);
         }
 
-        return scheduleCancellation(contract);
+        // Determinar quién cancela
+        boolean isOwner = contract.belongsToOwner(user.getId());
+
+        if (isOwner) {
+            return scheduleCancellationByOwner(contract);
+        } else {
+            return scheduleCancellationByTenant(contract);
+        }
     }
 
-    // Contrato aún no ha tenido pagos — se cancela de forma inmediata
+    // Cancelación inmediata (solo para PAYMENT_PENDING)
     private RentalContract cancelImmediately(RentalContract contract) {
-        contract.cancel();
+        contract.cancelImmediately();
         RentalContract saved = contractRepository.save(contract);
         propertyService.markAsAvailable(contract.getPropertyId());
         notifyContractCancelled.execute(contract.getTenantId(), contract.getOwnerId(), contract.getId(), true);
         return saved;
     }
 
-    // Contrato activo — requiere preaviso de 30 días, queda en CANCELLATION_PENDING
-    private RentalContract scheduleCancellation(RentalContract contract) {
-        LocalDate effectiveDate = calculateEffectiveCancellationDate(contract);
+    // Cancelación por PROPIETARIO: 30 días fijos desde hoy
+    private RentalContract scheduleCancellationByOwner(RentalContract contract) {
+        LocalDate effectiveDate = LocalDate.now().plusDays(OWNER_CANCELLATION_DAYS);
+        contract.scheduleCancellation(effectiveDate);
+        RentalContract saved = contractRepository.save(contract);
+        notifyContractCancelled.execute(contract.getTenantId(), contract.getOwnerId(), contract.getId(), false);
+        return saved;
+    }
+
+    // Cancelación por ARRENDATARIO: respeta ciclos de pago (máximo 30 días)
+    private RentalContract scheduleCancellationByTenant(RentalContract contract) {
+        LocalDate effectiveDate = calculateEffectiveCancellationDateForTenant(contract);
         contract.scheduleCancellation(effectiveDate);
         RentalContract saved = contractRepository.save(contract);
         notifyContractCancelled.execute(contract.getTenantId(), contract.getOwnerId(), contract.getId(), false);
@@ -74,20 +96,39 @@ public class CancelContractService implements CancelContractUseCase {
     }
 
     /**
-     * Calcula la fecha efectiva de cancelación usando la Opción 3:
-     * primer payment_due_date posterior a (hoy + 30 días).
-     * Garantiza cortes de pago limpios y respeta el preaviso mínimo.
+     * Calcula la fecha efectiva de cancelación para ARRENDATARIO:
+     * - Si el fin del período actual está a 30 días o menos → se usa esa fecha
+     * - Si está a más de 30 días → se usa hoy + 30 días, ajustado al siguiente fin de período
      */
-    private LocalDate calculateEffectiveCancellationDate(RentalContract contract) {
-        LocalDate minimumDate = LocalDate.now().plusDays(MINIMUM_NOTICE_DAYS);
-        LocalDate paymentDueDate = contract.getPaymentDueDate();
+    private LocalDate calculateEffectiveCancellationDateForTenant(RentalContract contract) {
+        LocalDate today = LocalDate.now();
+        LocalDate currentPeriodEnd = contract.getPaymentDueDate();
 
-        // Avanzar mes a mes hasta encontrar el primer vencimiento posterior al mínimo
-        while (!paymentDueDate.isAfter(minimumDate)) {
-            paymentDueDate = paymentDueDate.plusMonths(1);
+        if (currentPeriodEnd == null) {
+            return today.plusDays(OWNER_CANCELLATION_DAYS);
         }
 
-        return paymentDueDate;
+        long daysToCurrentEnd = ChronoUnit.DAYS.between(today, currentPeriodEnd);
+
+        // Si el período actual termina en 30 días o menos, usamos esa fecha
+        if (daysToCurrentEnd <= OWNER_CANCELLATION_DAYS) {
+            return currentPeriodEnd;
+        }
+
+        // Si no, calculamos hoy + 30 días
+        LocalDate targetDate = today.plusDays(OWNER_CANCELLATION_DAYS);
+
+        // Ajustamos al siguiente paymentDueDate (fin de período)
+        LocalDate nextPeriodEnd = currentPeriodEnd;
+        while (nextPeriodEnd.isBefore(targetDate)) {
+            nextPeriodEnd = switch (contract.getPaymentFrequency()) {
+                case MONTHLY -> nextPeriodEnd.plusMonths(1);
+                case BIWEEKLY -> nextPeriodEnd.plusWeeks(2);
+                case WEEKLY -> nextPeriodEnd.plusWeeks(1);
+            };
+        }
+
+        return nextPeriodEnd;
     }
 
     private void validateAccess(RentalContract contract, Long userId) {

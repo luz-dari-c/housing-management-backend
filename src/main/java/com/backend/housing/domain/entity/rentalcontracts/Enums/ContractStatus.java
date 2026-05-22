@@ -6,5 +6,6 @@ public enum ContractStatus {
         CANCELLATION_PENDING,
         CANCELLED,
         TERMINATED,
-        EXPIRED
+        EXPIRED,
+        PAID_NOT_STARTED
 }

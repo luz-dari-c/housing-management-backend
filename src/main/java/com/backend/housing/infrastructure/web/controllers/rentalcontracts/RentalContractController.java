@@ -4,16 +4,14 @@ import com.backend.housing.application.commands.rentalcontracts.CancelContractCo
 import com.backend.housing.application.commands.rentalcontracts.CreateContractCommand;
 import com.backend.housing.application.commands.rentalcontracts.TerminateContractCommand;
 import com.backend.housing.application.dto.request.rentalcontracts.CreateContractRequest;
+import com.backend.housing.application.dto.response.rentalcontracts.CancellationStatusResponse;
 import com.backend.housing.application.dto.response.rentalcontracts.ContractResponse;
 import com.backend.housing.application.mapper.rentalcontracts.ContractMapper;
 import com.backend.housing.domain.entity.properties.Property;
 import com.backend.housing.domain.entity.rentalcontracts.RentalContract;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.ContractId;
 import com.backend.housing.domain.entity.users.User;
-import com.backend.housing.domain.ports.in.rentalcontracts.CancelContractUseCase;
-import com.backend.housing.domain.ports.in.rentalcontracts.CreateContractUseCase;
-import com.backend.housing.domain.ports.in.rentalcontracts.GetContractUseCase;
-import com.backend.housing.domain.ports.in.rentalcontracts.TerminateContractUseCase;
+import com.backend.housing.domain.ports.in.rentalcontracts.*;
 import com.backend.housing.domain.ports.out.external.PropertyServicePort;
 import com.backend.housing.domain.ports.out.properties.UserValidationPort;
 import com.backend.housing.infrastructure.pdf.RentalContractPdfGenerator;
@@ -45,6 +43,8 @@ public class RentalContractController {
     private final UserValidationPort userValidationPort;
     private final CancelContractUseCase cancelContractUseCase;
     private final RentalContractPdfGenerator rentalContractPdfGenerator;
+    private final GetCancellationStatusUseCase getCancellationStatusUseCase;
+
 
     public RentalContractController(CreateContractUseCase createContractUseCase,
                                     TerminateContractUseCase terminateContractUseCase,
@@ -53,7 +53,8 @@ public class RentalContractController {
                                     PropertyServicePort propertyService,
                                     UserValidationPort userValidationPort,
                                     CancelContractUseCase cancelContractUseCase,
-                                    RentalContractPdfGenerator rentalContractPdfGenerator) {
+                                    RentalContractPdfGenerator rentalContractPdfGenerator,
+                                    GetCancellationStatusUseCase getCancellationStatusUseCase) {
         this.createContractUseCase = createContractUseCase;
         this.terminateContractUseCase = terminateContractUseCase;
         this.getContractUseCase = getContractUseCase;
@@ -62,6 +63,7 @@ public class RentalContractController {
         this.userValidationPort = userValidationPort;
         this.cancelContractUseCase = cancelContractUseCase;
         this.rentalContractPdfGenerator = rentalContractPdfGenerator;
+        this.getCancellationStatusUseCase = getCancellationStatusUseCase;
     }
 
     @Operation(summary = "Crear un nuevo contrato de arriendo")
@@ -188,6 +190,17 @@ public class RentalContractController {
                 .orElseThrow(() -> new RuntimeException("Owner not found"));
 
         return ResponseEntity.ok(contractMapper.toResponse(contract, property, tenant, owner));
+    }
+
+    @Operation(summary = "Consultar estado de cancelación de un contrato")
+    @GetMapping("/{id}/cancellation-status")
+    public ResponseEntity<CancellationStatusResponse> getCancellationStatus(@PathVariable UUID id) {
+        User currentUser = getAuthenticatedUser();
+        CancellationStatusResponse response = getCancellationStatusUseCase.execute(
+                ContractId.of(id),
+                currentUser.getId()
+        );
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Descargar contrato en PDF")

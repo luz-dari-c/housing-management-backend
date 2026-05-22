@@ -67,5 +67,5 @@ supabase:
 stripe:
   secret-key: ${STRIPE_SECRET_KEY:sk_test_placeholder}
   webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_placeholder}
-  success-url: http://localhost:3000/payment/success
-  cancel-url: http://localhost:3000/payment/cancel
+  success-url: ${SUCCES_URL}
+  cancel-url: ${CANCEL_URL}

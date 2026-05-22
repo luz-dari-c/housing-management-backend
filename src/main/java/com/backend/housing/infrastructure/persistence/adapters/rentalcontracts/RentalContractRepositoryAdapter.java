@@ -1,8 +1,8 @@
 package com.backend.housing.infrastructure.persistence.adapters.rentalcontracts;
 
-
 import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 import com.backend.housing.domain.entity.rentalcontracts.RentalContract;
+import com.backend.housing.domain.entity.rentalcontracts.Enums.ContractStatus;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.ContractId;
 import com.backend.housing.domain.ports.out.rentalcontracts.RentalContractRepository;
 import com.backend.housing.infrastructure.persistence.entities.rentalcontract.RentalContractEntity;
@@ -82,6 +82,13 @@ public class RentalContractRepositoryAdapter implements RentalContractRepository
     @Override
     public List<RentalContract> findPendingCancellationsDue(LocalDate date) {
         return jpaRepository.findPendingCancellationsDue(date).stream()
+                .map(mapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<RentalContract> findByStatusAndStartDateBeforeOrEqual(ContractStatus status, LocalDate date) {
+        return jpaRepository.findByStatusAndStartDateBeforeOrEqual(status.name(), date).stream()
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }

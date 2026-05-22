@@ -11,5 +11,8 @@ public record NextPaymentResponse(
         LocalDate dueDate,
         int daysRemaining,
         String paymentFrequency,
-        boolean isOverdue
+        boolean isOverdue,
+        boolean canPayNextPeriod,
+        String nextPeriodDescription,
+        BigDecimal nextPeriodAmount
 ) {}
