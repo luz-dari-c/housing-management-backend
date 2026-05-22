@@ -70,7 +70,7 @@ public class GetNextPaymentService implements GetNextPaymentUseCase {
         return new NextPaymentResponse(
                 contract.getId().getValue(),
                 propertyTitle,
-                contract.getMonthlyRent().getAmount(),
+                contract.getPeriodRent().getAmount(),
                 paymentDueDate,
                 (int) Math.abs(daysRemaining),
                 frequencyText,

@@ -5,7 +5,7 @@ import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 import com.backend.housing.domain.entity.rentalcontracts.Enums.ContractStatus;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.ContractId;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.DateRange;
-import com.backend.housing.domain.entity.rentalcontracts.valueobjects.MonthlyRent;
+import com.backend.housing.domain.entity.rentalcontracts.valueobjects.PeriodRent;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,7 +18,7 @@ public class RentalContract {
     private final Long tenantId;
     private final Long ownerId;
     private final DateRange period;
-    private final MonthlyRent monthlyRent;
+    private final PeriodRent periodRent;
     private ContractStatus status;
     private final LocalDateTime createdAt;
     private LocalDateTime terminatedAt;
@@ -32,7 +32,7 @@ public class RentalContract {
                            Long tenantId,
                            Long ownerId,
                            DateRange period,
-                           MonthlyRent monthlyRent,
+                           PeriodRent periodRent,
                            PaymentFrequency paymentFrequency,
                            ContractStatus status,
                            LocalDateTime createdAt,
@@ -46,7 +46,7 @@ public class RentalContract {
         this.tenantId = Objects.requireNonNull(tenantId);
         this.ownerId = Objects.requireNonNull(ownerId);
         this.period = Objects.requireNonNull(period);
-        this.monthlyRent = Objects.requireNonNull(monthlyRent);
+        this.periodRent = Objects.requireNonNull(periodRent);
         this.paymentFrequency = Objects.requireNonNull(paymentFrequency);
         this.status = Objects.requireNonNull(status);
         this.createdAt = Objects.requireNonNull(createdAt);
@@ -62,7 +62,7 @@ public class RentalContract {
                                         Long tenantId,
                                         Long ownerId,
                                         DateRange period,
-                                        MonthlyRent monthlyRent,
+                                        PeriodRent periodRent,
                                         PaymentFrequency paymentFrequency) {
 
         return new RentalContract(
@@ -71,7 +71,7 @@ public class RentalContract {
                 tenantId,
                 ownerId,
                 period,
-                monthlyRent,
+                periodRent,
                 paymentFrequency,
                 ContractStatus.PAYMENT_PENDING,
                 LocalDateTime.now(),
@@ -87,7 +87,7 @@ public class RentalContract {
                                               Long tenantId,
                                               Long ownerId,
                                               DateRange period,
-                                              MonthlyRent monthlyRent,
+                                              PeriodRent periodRent,
                                               PaymentFrequency paymentFrequency,
                                               ContractStatus status,
                                               LocalDateTime createdAt,
@@ -102,7 +102,7 @@ public class RentalContract {
                 tenantId,
                 ownerId,
                 period,
-                monthlyRent,
+                periodRent,
                 paymentFrequency,
                 status,
                 createdAt,
@@ -222,7 +222,7 @@ public class RentalContract {
     public Long getTenantId() { return tenantId; }
     public Long getOwnerId() { return ownerId; }
     public DateRange getPeriod() { return period; }
-    public MonthlyRent getMonthlyRent() { return monthlyRent; }
+    public PeriodRent getPeriodRent() { return periodRent; }
     public ContractStatus getStatus() { return status; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getTerminatedAt() { return terminatedAt; }

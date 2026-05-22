@@ -7,7 +7,7 @@ import java.util.List;
 public record PaymentHistoryResponse(
         String contractId,
         String propertyTitle,
-        BigDecimal monthlyRent,
+        BigDecimal periodRent,
         LocalDate nextPaymentDueDate,
         List<PaymentHistoryItem> payments
 ) {

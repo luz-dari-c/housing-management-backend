@@ -2,19 +2,12 @@ package com.backend.housing.infrastructure.pdf;
 
 import com.backend.housing.application.dto.response.rentalcontracts.ContractResponse;
 import com.backend.housing.domain.entity.properties.enums.PaymentFrequency;
-import com.backend.housing.domain.entity.rentalcontracts.Enums.ContractStatus;
 import com.itextpdf.kernel.colors.DeviceRgb;
-import com.itextpdf.kernel.events.Event;
-import com.itextpdf.kernel.events.IEventHandler;
-import com.itextpdf.kernel.events.PdfDocumentEvent;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.geom.PageSize;
-import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
 import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
@@ -39,6 +32,7 @@ public class RentalContractPdfGenerator {
     private static final DeviceRgb DARK_GRAY = new DeviceRgb(45, 45, 45);
     private static final DeviceRgb GRAY = new DeviceRgb(80, 80, 80);
     private static final DeviceRgb BORDER_GRAY = new DeviceRgb(200, 200, 200);
+    private static final DeviceRgb GREEN = new DeviceRgb(0, 100, 0);
 
     private static final float MARGIN_TOP = 72f;
     private static final float MARGIN_BOTTOM = 72f;
@@ -100,11 +94,14 @@ public class RentalContractPdfGenerator {
     private Table createHeader(ContractResponse contract) {
         Table header = new Table(UnitValue.createPercentArray(new float[]{100})).useAllAvailableWidth();
 
-        Paragraph contractNumber = new Paragraph("CONTRATO DE ARRENDAMIENTO NÚMERO: " + contract.contractId().toString().substring(0, 12).toUpperCase())
+        String contractNumber = "CONTRATO DE ARRENDAMIENTO NÚMERO: " +
+                (contract.contractId() != null ? contract.contractId().toString().substring(0, Math.min(12, contract.contractId().toString().length())).toUpperCase() : "N/A");
+
+        Paragraph contractNumberPara = new Paragraph(contractNumber)
                 .setFont(boldFont).setFontSize(10).setFontColor(DARK_GRAY)
                 .setTextAlignment(TextAlignment.CENTER);
 
-        Cell headerCell = new Cell().add(contractNumber)
+        Cell headerCell = new Cell().add(contractNumberPara)
                 .setBorder(Border.NO_BORDER)
                 .setPaddingBottom(10);
 
@@ -140,7 +137,9 @@ public class RentalContractPdfGenerator {
         Div dateDiv = new Div();
 
         String city = "Cartagena de Indias, D.T. y C.";
-        String dateStr = contract.createdAt().format(DATETIME_FORMATTER);
+        String dateStr = contract.createdAt() != null ?
+                contract.createdAt().format(DATETIME_FORMATTER) :
+                LocalDate.now().format(DATETIME_FORMATTER);
 
         Paragraph datePara = new Paragraph("En la ciudad de " + city + ", a los " + dateStr)
                 .setFont(regularFont).setFontSize(10).setFontColor(DARK_GRAY)
@@ -164,8 +163,8 @@ public class RentalContractPdfGenerator {
 
         Table partiesTable = new Table(UnitValue.createPercentArray(new float[]{48, 48})).useAllAvailableWidth();
 
-        partiesTable.addCell(createPartyCell("ARRENDADOR", contract.ownerName(), "Propietario del inmueble"));
-        partiesTable.addCell(createPartyCell("ARRENDATARIO", contract.tenantName(), "Arrendatario"));
+        partiesTable.addCell(createPartyCell("ARRENDADOR", contract.ownerName(), contract.ownerCedula(), "Propietario del inmueble"));
+        partiesTable.addCell(createPartyCell("ARRENDATARIO", contract.tenantName(), contract.tenantCedula(), "Arrendatario"));
 
         section.add(partiesTable);
         section.setMarginBottom(10);
@@ -173,13 +172,18 @@ public class RentalContractPdfGenerator {
         return section;
     }
 
-    private Cell createPartyCell(String role, String name, String description) {
+    private Cell createPartyCell(String role, String name, String cedula, String description) {
         Div cellDiv = new Div();
 
         cellDiv.add(new Paragraph(role).setFont(boldFont).setFontSize(9).setFontColor(GRAY));
         cellDiv.add(new Paragraph(name.toUpperCase()).setFont(boldFont).setFontSize(11).setFontColor(BLACK).setMarginTop(3));
         cellDiv.add(new Paragraph(description).setFont(regularFont).setFontSize(8).setFontColor(GRAY).setMarginTop(2));
-        cellDiv.add(new Paragraph("Identificación: _________________").setFont(regularFont).setFontSize(8).setFontColor(GRAY).setMarginTop(5));
+
+        if (cedula != null && !cedula.isEmpty()) {
+            cellDiv.add(new Paragraph("Cédula: " + cedula).setFont(regularFont).setFontSize(8).setFontColor(DARK_GRAY).setMarginTop(5));
+        } else {
+            cellDiv.add(new Paragraph("Cédula: No registrada").setFont(regularFont).setFontSize(8).setFontColor(GRAY).setMarginTop(5));
+        }
 
         return new Cell().add(cellDiv)
                 .setBorder(new SolidBorder(BORDER_GRAY, 0.5f))
@@ -196,11 +200,12 @@ public class RentalContractPdfGenerator {
         section.add(title);
         section.add(new Paragraph(" ").setMarginBottom(5));
 
-        String ownerNameUpper = contract.ownerName().toUpperCase();
-        String tenantNameUpper = contract.tenantName().toUpperCase();
+        String ownerNameUpper = contract.ownerName() != null ? contract.ownerName().toUpperCase() : "ARRENDADOR";
+        String tenantNameUpper = contract.tenantName() != null ? contract.tenantName().toUpperCase() : "ARRENDATARIO";
+        String propertyTitle = contract.propertyTitle() != null ? contract.propertyTitle() : "el inmueble";
 
         String recitals =
-                "PRIMERA. - " + ownerNameUpper + " (en adelante EL ARRENDADOR) es legítimo propietario del inmueble ubicado en " + contract.propertyTitle() +
+                "PRIMERA. - " + ownerNameUpper + " (en adelante EL ARRENDADOR) es legítimo propietario del inmueble ubicado en " + propertyTitle +
                         ", con plena capacidad legal para celebrar el presente contrato.\n\n" +
 
                         "SEGUNDA. - " + tenantNameUpper + " (en adelante EL ARRENDATARIO) manifiesta su voluntad de tomar en arrendamiento el inmueble descrito, " +
@@ -233,8 +238,11 @@ public class RentalContractPdfGenerator {
         Table propertyTable = new Table(UnitValue.createPercentArray(new float[]{25, 75})).useAllAvailableWidth();
         propertyTable.setBorder(new SolidBorder(BORDER_GRAY, 0.5f));
 
-        addTableRow(propertyTable, "DIRECCIÓN:", contract.propertyTitle());
-        addTableRow(propertyTable, "MATRÍCULA:", contract.propertyId().toString().substring(0, 12).toUpperCase());
+        String propertyIdStr = contract.propertyId() != null ?
+                contract.propertyId().toString().substring(0, Math.min(12, contract.propertyId().toString().length())).toUpperCase() : "N/A";
+
+        addTableRow(propertyTable, "DIRECCIÓN:", contract.propertyTitle() != null ? contract.propertyTitle() : "No especificada");
+        addTableRow(propertyTable, "MATRÍCULA:", propertyIdStr);
         addTableRow(propertyTable, "DESTINACIÓN ECONÓMICA:", "Residencial - Vivienda familiar");
 
         section.add(propertyTable);
@@ -269,10 +277,10 @@ public class RentalContractPdfGenerator {
         Table termsTable = new Table(UnitValue.createPercentArray(new float[]{35, 65})).useAllAvailableWidth();
         termsTable.setBorder(new SolidBorder(BORDER_GRAY, 0.5f));
 
-        String startDate = contract.startDate().format(DATE_FORMATTER);
-        String endDate = contract.endDate().format(DATE_FORMATTER);
+        String startDate = contract.startDate() != null ? contract.startDate().format(DATE_FORMATTER) : "No especificada";
+        String endDate = contract.endDate() != null ? contract.endDate().format(DATE_FORMATTER) : "No especificada";
         String duration = calculateDuration(contract);
-        String monthlyRent = formatCurrency(contract.monthlyRent());
+        String monthlyRent = formatCurrency(contract.periodRent());
         String paymentDay = getPaymentDayDescription(contract.startDate(), contract.paymentFrequency());
         String paymentFrequencyText = getPaymentFrequencyText(contract.paymentFrequency());
 
@@ -300,6 +308,7 @@ public class RentalContractPdfGenerator {
     }
 
     private String getPaymentDayDescription(LocalDate startDate, PaymentFrequency frequency) {
+        if (startDate == null) return "Día a convenir entre las partes";
         if (frequency == null) return "Día " + startDate.getDayOfMonth() + " de cada mes";
 
         int dayOfMonth = startDate.getDayOfMonth();
@@ -321,15 +330,15 @@ public class RentalContractPdfGenerator {
         section.add(title);
         section.add(new Paragraph(" ").setMarginBottom(5));
 
-        String monthlyRent = formatCurrency(contract.monthlyRent());
-        String startDate = contract.startDate().format(DATE_FORMATTER);
-        String endDate = contract.endDate().format(DATE_FORMATTER);
+        String monthlyRent = formatCurrency(contract.periodRent());
+        String startDate = contract.startDate() != null ? contract.startDate().format(DATE_FORMATTER) : "la fecha pactada";
+        String endDate = contract.endDate() != null ? contract.endDate().format(DATE_FORMATTER) : "la fecha pactada";
         String duration = calculateDuration(contract);
-        String propertyAddress = contract.propertyTitle();
+        String propertyAddress = contract.propertyTitle() != null ? contract.propertyTitle() : "el inmueble arrendado";
         String paymentRule = getPaymentRuleDescription(contract);
         String paymentFrequencyText = getPaymentFrequencyText(contract.paymentFrequency());
-        String ownerNameUpper = contract.ownerName().toUpperCase();
-        String tenantNameUpper = contract.tenantName().toUpperCase();
+        String ownerNameUpper = contract.ownerName() != null ? contract.ownerName().toUpperCase() : "EL ARRENDADOR";
+        String tenantNameUpper = contract.tenantName() != null ? contract.tenantName().toUpperCase() : "EL ARRENDATARIO";
 
         section.add(createClause("PRIMERA", "OBJETO DEL CONTRATO",
                 "El presente contrato tiene por objeto el arrendamiento del inmueble ubicado en " + propertyAddress +
@@ -382,6 +391,10 @@ public class RentalContractPdfGenerator {
     }
 
     private String getPaymentRuleDescription(ContractResponse contract) {
+        if (contract.startDate() == null) {
+            return "El primer pago se realizará en la fecha de inicio del contrato, y los pagos sucesivos según la frecuencia pactada.";
+        }
+
         LocalDate startDate = contract.startDate();
         String startDateStr = startDate.format(DATE_FORMATTER);
 
@@ -462,35 +475,51 @@ public class RentalContractPdfGenerator {
 
         Table signaturesTable = new Table(UnitValue.createPercentArray(new float[]{48, 48})).useAllAvailableWidth();
 
-        signaturesTable.addCell(createSignatureCell("EL ARRENDADOR", contract.ownerName()));
-        signaturesTable.addCell(createSignatureCell("EL ARRENDATARIO", contract.tenantName()));
+        signaturesTable.addCell(createAcceptanceCell("EL ARRENDADOR", contract.ownerName(), contract.ownerCedula()));
+        signaturesTable.addCell(createAcceptanceCell("EL ARRENDATARIO", contract.tenantName(), contract.tenantCedula()));
 
         section.add(signaturesTable);
         section.add(new Paragraph(" ").setMarginBottom(15));
 
-        Paragraph datePlace = new Paragraph("Cartagena de Indias, " + contract.createdAt().format(DATE_FORMATTER))
+        String dateStr = contract.createdAt() != null ?
+                contract.createdAt().format(DATE_FORMATTER) :
+                LocalDate.now().format(DATE_FORMATTER);
+
+        Paragraph datePlace = new Paragraph("Cartagena de Indias, " + dateStr)
                 .setFont(regularFont).setFontSize(9).setFontColor(GRAY)
                 .setTextAlignment(TextAlignment.CENTER);
         section.add(datePlace);
 
+        Paragraph electronicNote = new Paragraph("Documento generado electrónicamente - Válido sin firma autógrafa según Ley 527 de 1999")
+                .setFont(regularFont).setFontSize(7).setFontColor(GRAY)
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginTop(20);
+        section.add(electronicNote);
+
         return section;
     }
 
-    private Cell createSignatureCell(String role, String name) {
+    private Cell createAcceptanceCell(String role, String name, String cedula) {
         Div cellDiv = new Div();
-        cellDiv.setMarginBottom(20);
+        cellDiv.setMarginBottom(10);
 
         cellDiv.add(new Paragraph(role).setFont(boldFont).setFontSize(9).setFontColor(GRAY).setTextAlignment(TextAlignment.CENTER));
-        cellDiv.add(new Paragraph(" ").setMarginBottom(25));
+        cellDiv.add(new Paragraph(" ").setMarginBottom(10));
 
-        SolidLine solidLine = new SolidLine(0.5f);
-        solidLine.setColor(BLACK);
-        LineSeparator line = new LineSeparator(solidLine);
-        line.setWidth(UnitValue.createPercentValue(80));
-        cellDiv.add(line);
+        cellDiv.add(new Paragraph(name != null ? name.toUpperCase() : "USUARIO").setFont(boldFont).setFontSize(10).setFontColor(BLACK).setTextAlignment(TextAlignment.CENTER));
 
-        cellDiv.add(new Paragraph(name.toUpperCase()).setFont(regularFont).setFontSize(9).setFontColor(BLACK).setTextAlignment(TextAlignment.CENTER).setMarginTop(5));
-        cellDiv.add(new Paragraph("C.C. _________________").setFont(regularFont).setFontSize(8).setFontColor(GRAY).setTextAlignment(TextAlignment.CENTER));
+        if (cedula != null && !cedula.isEmpty()) {
+            cellDiv.add(new Paragraph("C.C. " + cedula).setFont(regularFont).setFontSize(8).setFontColor(DARK_GRAY).setTextAlignment(TextAlignment.CENTER));
+        } else {
+            cellDiv.add(new Paragraph("Cédula no registrada").setFont(regularFont).setFontSize(8).setFontColor(GRAY).setTextAlignment(TextAlignment.CENTER));
+        }
+
+        cellDiv.add(new Paragraph(" ").setMarginBottom(15));
+
+        cellDiv.add(new Paragraph("✓ ACEPTACIÓN DIGITAL")
+                .setFont(boldFont).setFontSize(8).setFontColor(GREEN)
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginTop(5));
 
         return new Cell().add(cellDiv)
                 .setBorder(Border.NO_BORDER)
@@ -498,11 +527,20 @@ public class RentalContractPdfGenerator {
     }
 
     private String calculateDuration(ContractResponse contract) {
+        if (contract.startDate() == null || contract.endDate() == null) {
+            return "No especificado";
+        }
+
         LocalDate start = contract.startDate();
         LocalDate end = contract.endDate();
         PaymentFrequency frequency = contract.paymentFrequency();
 
         long daysBetween = ChronoUnit.DAYS.between(start, end);
+
+        if (frequency == null) {
+            long months = ChronoUnit.MONTHS.between(start, end);
+            return months == 1 ? "1 mes" : months + " meses";
+        }
 
         return switch (frequency) {
             case MONTHLY -> {

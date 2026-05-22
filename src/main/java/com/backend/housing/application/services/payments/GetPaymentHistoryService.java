@@ -88,7 +88,7 @@ public class GetPaymentHistoryService implements GetPaymentHistoryUseCase {
         return new PaymentHistoryResponse(
                 contractId.getValue().toString(),
                 propertyTitle,
-                contract.getMonthlyRent().getAmount(),
+                contract.getPeriodRent().getAmount(),
                 contract.getPaymentDueDate(),
                 payments
         );

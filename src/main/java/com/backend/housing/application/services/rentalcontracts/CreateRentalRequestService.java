@@ -5,6 +5,7 @@ import com.backend.housing.domain.entity.properties.Property;
 import com.backend.housing.domain.entity.properties.enums.PaymentFrequency;
 import com.backend.housing.domain.entity.rentalcontracts.RentalRequest;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.DateRange;
+import com.backend.housing.domain.ports.in.notifications.NotifyRequestSendUseCase;
 import com.backend.housing.domain.ports.in.rentalcontracts.CreateRentalRequestUseCase;
 import com.backend.housing.domain.ports.out.external.PropertyServicePort;
 import com.backend.housing.domain.ports.out.properties.UserValidationPort;
@@ -21,13 +22,17 @@ public class CreateRentalRequestService implements CreateRentalRequestUseCase {
     private final RentalRequestRepository repository;
     private final PropertyServicePort propertyService;
     private final UserValidationPort userService;
+    private final NotifyRequestSendUseCase notifyRequestSend;;
 
     public CreateRentalRequestService(RentalRequestRepository repository,
                                       PropertyServicePort propertyService,
-                                      UserValidationPort userService) {
+                                      UserValidationPort userService,
+                                        NotifyRequestSendUseCase notifyRequestSend
+                                      ) {
         this.repository = repository;
         this.propertyService = propertyService;
         this.userService = userService;
+        this.notifyRequestSend = notifyRequestSend;
     }
 
     @Override
@@ -67,7 +72,11 @@ public class CreateRentalRequestService implements CreateRentalRequestUseCase {
                 command.getProposedRent()
         );
 
+        notifyRequestSend.execute(request.getOwnerId());
+
         return repository.save(request);
+
+
     }
 
     private LocalDate calculateEndDate(LocalDate startDate, Integer duration, PaymentFrequency frequency) {

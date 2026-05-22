@@ -5,15 +5,23 @@ spring:
   datasource:
     url: jdbc:postgresql://ep-soft-breeze-aicyu3ti-pooler.c-4.us-east-1.aws.neon.tech/neondb?sslmode=require
     username: neondb_owner
-    password: npg_LUdo0XrRWbI7
+    password: ${DB_PASS}
     driver-class-name: org.postgresql.Driver
+
     hikari:
       maximum-pool-size: 5
+
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
 
   jpa:
     hibernate:
       ddl-auto: update
+
     show-sql: true
+
     properties:
       hibernate:
         format_sql: true
@@ -27,7 +35,8 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: imsharlok@gmail.com
-    password: vfgk gfek riwm lbjh
+    password: ${MAIL_PASSWORD}
+
     properties:
       mail:
         smtp:

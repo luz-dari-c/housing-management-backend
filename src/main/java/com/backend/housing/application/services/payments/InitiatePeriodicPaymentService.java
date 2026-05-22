@@ -153,7 +153,7 @@ public class InitiatePeriodicPaymentService implements InitiatePeriodicPaymentUs
     private CheckoutSessionResult createCheckout(RentalContract contract,
                                                  ContractId contractId) {
 
-        BigDecimal amount = contract.getMonthlyRent().getAmount();
+        BigDecimal amount = contract.getPeriodRent().getAmount();
 
         return paymentProvider.createCheckoutSession(
                 amount,
@@ -172,7 +172,7 @@ public class InitiatePeriodicPaymentService implements InitiatePeriodicPaymentUs
         Payment payment = Payment.createWithCheckoutSession(
                 contract.getId().getValue(),
                 PaymentReferenceType.RENTAL,
-                contract.getMonthlyRent().getAmount(),
+                contract.getPeriodRent().getAmount(),
                 "COP",
                 PaymentMethod.CARD,
                 checkout.getSessionId(),

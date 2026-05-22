@@ -18,7 +18,8 @@ public class PropertySummaryResponseMapper {
                 property.getDescription(),
                 property.getTransactionType(),
                 property.getPriceAmount(),
-                property.getImageUrls()
+                property.getImageUrls(),
+                property.getStatus()
         );
     }
 

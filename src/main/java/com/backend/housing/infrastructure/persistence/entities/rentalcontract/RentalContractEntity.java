@@ -34,8 +34,8 @@ public class RentalContractEntity {
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
-    @Column(name = "monthly_rent", nullable = false)
-    private BigDecimal monthlyRent;
+    @Column(name = "period_rent", nullable = false)
+    private BigDecimal periodRent;
 
     @Column(name = "status", nullable = false)
     private String status;
@@ -68,7 +68,7 @@ public class RentalContractEntity {
                                 Long ownerId,
                                 LocalDate startDate,
                                 LocalDate endDate,
-                                BigDecimal monthlyRent,
+                                BigDecimal periodRent,
                                 String paymentFrequency,
                                 String status,
                                 LocalDateTime createdAt,
@@ -82,7 +82,7 @@ public class RentalContractEntity {
         this.ownerId = ownerId;
         this.startDate = startDate;
         this.endDate = endDate;
-        this.monthlyRent = monthlyRent;
+        this.periodRent = periodRent;
         this.paymentFrequency = paymentFrequency;
         this.status = status;
         this.createdAt = createdAt;

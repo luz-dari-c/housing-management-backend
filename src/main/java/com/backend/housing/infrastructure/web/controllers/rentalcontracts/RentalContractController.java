@@ -77,12 +77,12 @@ public class RentalContractController {
         Property property = propertyService.getPropertyBasicInfo(contract.getPropertyId())
                 .orElseThrow(() -> new RuntimeException("Property not found"));
 
-        String tenantName = userValidationPort.getUserName(contract.getTenantId())
-                .orElse("Unknown");
-        String ownerName = userValidationPort.getUserName(contract.getOwnerId())
-                .orElse("Unknown");
+        User tenant = userValidationPort.findByUserId(contract.getTenantId())
+                .orElseThrow(() -> new RuntimeException("Tenant not found"));
+        User owner = userValidationPort.findByUserId(contract.getOwnerId())
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
 
-        ContractResponse response = contractMapper.toResponse(contract, property, tenantName, ownerName);
+        ContractResponse response = contractMapper.toResponse(contract, property, tenant, owner);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -98,12 +98,12 @@ public class RentalContractController {
         Property property = propertyService.getPropertyBasicInfo(contract.getPropertyId())
                 .orElseThrow(() -> new RuntimeException("Property not found"));
 
-        String tenantName = userValidationPort.getUserName(contract.getTenantId())
-                .orElse("Unknown");
-        String ownerName = userValidationPort.getUserName(contract.getOwnerId())
-                .orElse("Unknown");
+        User tenant = userValidationPort.findByUserId(contract.getTenantId())
+                .orElseThrow(() -> new RuntimeException("Tenant not found"));
+        User owner = userValidationPort.findByUserId(contract.getOwnerId())
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
 
-        ContractResponse response = contractMapper.toResponse(contract, property, tenantName, ownerName);
+        ContractResponse response = contractMapper.toResponse(contract, property, tenant, owner);
 
         return ResponseEntity.ok(response);
     }
@@ -132,11 +132,13 @@ public class RentalContractController {
                 .map(contract -> {
                     Property property = propertyService.getPropertyBasicInfo(contract.getPropertyId())
                             .orElseThrow(() -> new RuntimeException("Property not found"));
-                    String tenantName = userValidationPort.getUserName(contract.getTenantId())
-                            .orElse("Unknown");
-                    String ownerName = userValidationPort.getUserName(contract.getOwnerId())
-                            .orElse("Unknown");
-                    return contractMapper.toResponse(contract, property, tenantName, ownerName);
+
+                    User tenant = userValidationPort.findByUserId(contract.getTenantId())
+                            .orElseThrow(() -> new RuntimeException("Tenant not found"));
+                    User owner = userValidationPort.findByUserId(contract.getOwnerId())
+                            .orElseThrow(() -> new RuntimeException("Owner not found"));
+
+                    return contractMapper.toResponse(contract, property, tenant, owner);
                 })
                 .collect(Collectors.toList());
 
@@ -155,17 +157,18 @@ public class RentalContractController {
                 .map(contract -> {
                     Property property = propertyService.getPropertyBasicInfo(contract.getPropertyId())
                             .orElseThrow(() -> new RuntimeException("Property not found"));
-                    String tenantName = userValidationPort.getUserName(contract.getTenantId())
-                            .orElse("Unknown");
-                    String ownerName = userValidationPort.getUserName(contract.getOwnerId())
-                            .orElse("Unknown");
-                    return contractMapper.toResponse(contract, property, tenantName, ownerName);
+
+                    User tenant = userValidationPort.findByUserId(contract.getTenantId())
+                            .orElseThrow(() -> new RuntimeException("Tenant not found"));
+                    User owner = userValidationPort.findByUserId(contract.getOwnerId())
+                            .orElseThrow(() -> new RuntimeException("Owner not found"));
+
+                    return contractMapper.toResponse(contract, property, tenant, owner);
                 })
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(responses);
     }
-
 
     @Operation(summary = "Cancelar un contrato de arriendo")
     @PostMapping("/{id}/cancel")
@@ -179,10 +182,12 @@ public class RentalContractController {
         Property property = propertyService.getPropertyBasicInfo(contract.getPropertyId())
                 .orElseThrow(() -> new RuntimeException("Property not found"));
 
-        String tenantName = userValidationPort.getUserName(contract.getTenantId()).orElse("Unknown");
-        String ownerName  = userValidationPort.getUserName(contract.getOwnerId()).orElse("Unknown");
+        User tenant = userValidationPort.findByUserId(contract.getTenantId())
+                .orElseThrow(() -> new RuntimeException("Tenant not found"));
+        User owner = userValidationPort.findByUserId(contract.getOwnerId())
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
 
-        return ResponseEntity.ok(contractMapper.toResponse(contract, property, tenantName, ownerName));
+        return ResponseEntity.ok(contractMapper.toResponse(contract, property, tenant, owner));
     }
 
     @Operation(summary = "Descargar contrato en PDF")
@@ -195,10 +200,12 @@ public class RentalContractController {
         Property property = propertyService.getPropertyBasicInfo(contract.getPropertyId())
                 .orElseThrow(() -> new RuntimeException("Property not found"));
 
-        String tenantName = userValidationPort.getUserName(contract.getTenantId()).orElse("—");
-        String ownerName  = userValidationPort.getUserName(contract.getOwnerId()).orElse("—");
+        User tenant = userValidationPort.findByUserId(contract.getTenantId())
+                .orElseThrow(() -> new RuntimeException("Tenant not found"));
+        User owner = userValidationPort.findByUserId(contract.getOwnerId())
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
 
-        ContractResponse response = contractMapper.toResponse(contract, property, tenantName, ownerName);
+        ContractResponse response = contractMapper.toResponse(contract, property, tenant, owner);
         byte[] pdf = rentalContractPdfGenerator.generate(response);
 
         return ResponseEntity.ok()
@@ -207,7 +214,6 @@ public class RentalContractController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
     }
-
 
     private User getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

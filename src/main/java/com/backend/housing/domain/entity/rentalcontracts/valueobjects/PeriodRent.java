@@ -3,21 +3,21 @@ package com.backend.housing.domain.entity.rentalcontracts.valueobjects;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class MonthlyRent {
+public class PeriodRent {
     private final BigDecimal amount;
 
-    private MonthlyRent(BigDecimal amount) {
+    private PeriodRent(BigDecimal amount) {
         if (amount == null) {
-            throw new IllegalArgumentException("Monthly rent cannot be null");
+            throw new IllegalArgumentException("El valor del período no puede ser nulo");
         }
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Monthly rent must be greater than zero");
+            throw new IllegalArgumentException("El valor del período debe ser mayor que cero");
         }
         this.amount = amount;
     }
 
-    public static MonthlyRent of(BigDecimal amount) {
-        return new MonthlyRent(amount);
+    public static PeriodRent of(BigDecimal amount) {
+        return new PeriodRent(amount);
     }
 
     public BigDecimal getAmount() {
@@ -28,7 +28,7 @@ public class MonthlyRent {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MonthlyRent that = (MonthlyRent) o;
+        PeriodRent that = (PeriodRent) o;
         return Objects.equals(amount, that.amount);
     }
 

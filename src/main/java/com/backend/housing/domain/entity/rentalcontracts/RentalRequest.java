@@ -117,17 +117,6 @@ public class RentalRequest {
         this.respondedAt = LocalDateTime.now();
     }
 
-//    public void cancel(Long userId) {
-//        if (!tenantId.equals(userId)) {
-//            throw new SecurityException();
-//        }
-//        if (status != RentalRequestStatus.PENDING) {
-//            throw new IllegalStateException();
-//        }
-//        this.status = RentalRequestStatus.CANCELLED;
-//        this.respondedAt = LocalDateTime.now();
-//    }
-
     public void cancel() {
         if (!isPending()) {
             throw new IllegalStateException("Solo se pueden cancelar solicitudes en estado PENDING");

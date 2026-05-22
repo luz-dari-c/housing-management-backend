@@ -9,7 +9,8 @@ public interface UserValidationPort {
     boolean userExists(Long userId);
 
     Optional<User> findByEmail(String email);
+
+    Optional<User> findByUserId(Long userId);
+
     Optional<String> getUserName(Long userId);
-
-
 }

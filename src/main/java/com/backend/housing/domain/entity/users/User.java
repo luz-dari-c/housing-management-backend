@@ -12,8 +12,8 @@ public class User {
     private String cedula;
     private Integer edad;
     private String password;
-    private String phoneNumber; // NUEVO
-    private String profilePictureUrl; // NUEVO
+    private String phoneNumber;
+    private String profilePictureUrl;
     private boolean active;
     private Set<Rol> roles;
 

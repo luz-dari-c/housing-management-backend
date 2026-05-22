@@ -5,12 +5,13 @@ import com.backend.housing.domain.entity.properties.Property;
 import com.backend.housing.domain.entity.properties.enums.PaymentFrequency;
 import com.backend.housing.domain.entity.rentalcontracts.RentalContract;
 import com.backend.housing.domain.entity.rentalcontracts.RentalRequest;
-import com.backend.housing.domain.entity.rentalcontracts.valueobjects.MonthlyRent;
+import com.backend.housing.domain.entity.rentalcontracts.valueobjects.PeriodRent;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.RequestId;
 import com.backend.housing.domain.ports.in.notifications.NotifyRequestAcceptedUseCase;
 import com.backend.housing.domain.ports.in.rentalcontracts.AcceptRentalRequestUseCase;
 import com.backend.housing.domain.ports.out.properties.PropertyRepository;
 import com.backend.housing.domain.ports.out.rentalcontracts.RentalContractRepository;
+import com.backend.housing.domain.ports.out.users.UserRoleServicePort;
 import com.backend.housing.domain.ports.out.rentalcontracts.RentalRequestRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,15 +25,18 @@ public class AcceptRentalRequestService implements AcceptRentalRequestUseCase {
     private final PropertyRepository propertyRepository;
     private final RentalContractRepository rentalContractRepository;
     private final NotifyRequestAcceptedUseCase notifyRequestAcceptedUseCase;
+    private final UserRoleServicePort userRoleServicePort;
 
     public AcceptRentalRequestService(RentalRequestRepository rentalRequestRepository,
                                       PropertyRepository propertyRepository,
                                       RentalContractRepository rentalContractRepository,
-                                      NotifyRequestAcceptedUseCase notifyRequestAcceptedUseCase) {
+                                      NotifyRequestAcceptedUseCase notifyRequestAcceptedUseCase,
+                                      UserRoleServicePort userRoleServicePort) {
         this.rentalRequestRepository = rentalRequestRepository;
         this.propertyRepository = propertyRepository;
         this.rentalContractRepository = rentalContractRepository;
         this.notifyRequestAcceptedUseCase = notifyRequestAcceptedUseCase;
+        this.userRoleServicePort = userRoleServicePort;
     }
 
     @Transactional
@@ -71,11 +75,16 @@ public class AcceptRentalRequestService implements AcceptRentalRequestUseCase {
                 request.getTenantId(),
                 property.getOwnerId(),
                 request.getPeriod(),
-                MonthlyRent.of(finalPrice),
+                PeriodRent.of(finalPrice),
                 paymentFrequency
         );
 
         RentalContract savedContract = rentalContractRepository.save(contract);
+
+        try {
+            userRoleServicePort.assignTenantRole(savedContract.getTenantId());
+        } catch (Exception ignored) {
+        }
 
         property.markAsRented();
         propertyRepository.save(property);

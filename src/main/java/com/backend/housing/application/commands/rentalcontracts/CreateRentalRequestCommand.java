@@ -22,10 +22,10 @@ public class CreateRentalRequestCommand {
                                       Integer duration,
                                       BigDecimal proposedRent) {
 
-        this.propertyId = Objects.requireNonNull(propertyId, "PropertyId is required");
-        this.tenantId = Objects.requireNonNull(tenantId, "TenantId is required");
-        this.startDate = Objects.requireNonNull(startDate, "StartDate is required");
-        this.duration = Objects.requireNonNull(duration, "Duration is required");
+        this.propertyId = Objects.requireNonNull(propertyId, "El id de la propiedad es requerido");
+        this.tenantId = Objects.requireNonNull(tenantId, "El id del inquilino es requerido");
+        this.startDate = Objects.requireNonNull(startDate, "Fecha de inicio es requerida");
+        this.duration = Objects.requireNonNull(duration, "Duracion es requerida");
         this.proposedRent = proposedRent;
 
         validateStartDate();
@@ -33,7 +33,7 @@ public class CreateRentalRequestCommand {
 
     private void validateStartDate() {
         if (startDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Start date cannot be in the past");
+            throw new IllegalArgumentException("Fecha de inicio no puede ser en el pasado");
         }
     }
 }

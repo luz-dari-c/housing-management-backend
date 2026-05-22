@@ -12,17 +12,17 @@ import java.math.BigDecimal;
 @Setter
 public class CreateRentalRequestRequest {
 
-    @NotNull(message = "Property ID is required")
-    @NotBlank(message = "Property ID cannot be blank")
+    @NotNull(message = "Propiedad ID es requerido")
+    @NotBlank(message = "Propiedad ID no puede estar vacío")
     private String propertyId;
 
-    @Positive(message = "Proposed rent must be positive")
+    @Positive(message = "El precio propuesto debe ser positivo")
     private BigDecimal proposedRent;
 
-    @NotNull(message = "Start date is required")
+    @NotNull(message = "Fecha de inicio es requerida")
     private String startDate;
 
-    @NotNull(message = "Duration is required")
-    @Positive(message = "Duration must be positive")
+    @NotNull(message = "Duracion es requerida")
+    @Positive(message = "Duracion debe ser un número positivo")
     private Integer duration;
 }

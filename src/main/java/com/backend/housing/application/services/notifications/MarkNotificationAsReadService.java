@@ -26,7 +26,6 @@ public class MarkNotificationAsReadService implements MarkNotificationAsReadUseC
             throw new SecurityException("User not authorized to mark this notification as read");
         }
 
-        notification.markAsRead();
-        notificationRepository.save(notification);
+        notificationRepository.markAsRead(notificationId);
     }
 }

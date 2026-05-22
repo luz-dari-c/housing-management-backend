@@ -43,6 +43,7 @@ public class PropertyResponseMapper {
         Boolean petsAllowed = rentalTerms != null ? rentalTerms.isPetsAllowed() : null;
         Boolean furnished = rentalTerms != null ? rentalTerms.isFurnished() : null;
 
+
         return new PropertyDetailResponse(
                 property.getId().getValue(),
                 property.getTitle(),
@@ -53,6 +54,7 @@ public class PropertyResponseMapper {
                 property.getTypeProperty(),
                 property.getStatus(),
                 property.getOwnerId(),
+                property.getCreatedAt(),
                 property.getUpdatedAt(),
                 property.getPublishedAt(),
                 property.getImageUrls(),
@@ -61,7 +63,9 @@ public class PropertyResponseMapper {
                 property.getAreaInSquareMeters(),
                 petsAllowed,
                 furnished,
-                property.getAddress()
+                property.getAddress(),
+                rentalTerms != null ? rentalTerms.getPaymentFrequency() : null
+
         );
     }
 
@@ -72,7 +76,8 @@ public class PropertyResponseMapper {
                 property.getDescription(),
                 property.getTransactionType(),
                 property.getPriceAmount(),
-                property.getImageUrls()
+                property.getImageUrls(),
+                property.getStatus()
         );
     }
 

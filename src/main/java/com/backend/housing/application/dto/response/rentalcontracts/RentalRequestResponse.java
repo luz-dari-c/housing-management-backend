@@ -16,6 +16,6 @@ public record RentalRequestResponse(
         RentalRequestStatus status,
         LocalDateTime createdAt,
         LocalDateTime respondedAt,
-        String message,        // ← NUEVO
-        String nextStep        // ← NUEVO
+        String message,
+        String nextStep
 ) {}

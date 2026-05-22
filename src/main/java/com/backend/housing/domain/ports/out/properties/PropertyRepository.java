@@ -23,7 +23,9 @@ public interface PropertyRepository {
     List<Property> findByPropertyStatus(PropertyStatus status, Pagination pagination);
 
     List<Property> findByOwnerIdAndPropertyStatus(Long ownerId, PropertyStatus status, Pagination pagination);
+
     List<Property> findByOwnerId(Long ownerId, Pagination pagination);
+
     List<Property> findByOwnerIdAndPropertyStatusNot(Long ownerId, PropertyStatus status, Pagination pagination);
 
 

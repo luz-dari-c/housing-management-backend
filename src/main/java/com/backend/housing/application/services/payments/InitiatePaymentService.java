@@ -78,7 +78,7 @@ public class InitiatePaymentService implements InitiatePaymentUseCase {
 
     private CheckoutSessionResult createCheckout(RentalContract contract) {
 
-        BigDecimal amount = contract.getMonthlyRent().getAmount();
+        BigDecimal amount = contract.getPeriodRent().getAmount();
 
         return paymentProvider.createCheckoutSession(
                 amount,
@@ -101,7 +101,7 @@ public class InitiatePaymentService implements InitiatePaymentUseCase {
         Payment payment = Payment.createWithCheckoutSession(
                 contract.getId().getValue(),
                 PaymentReferenceType.RENTAL,
-                contract.getMonthlyRent().getAmount(),
+                contract.getPeriodRent().getAmount(),
                 "COP",
                 PaymentMethod.CARD,
                 checkout.getSessionId(),

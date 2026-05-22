@@ -26,6 +26,7 @@ public class Notification {
                          boolean read,
                          ContractId contractId,
                          LocalDateTime createdAt) {
+
         this.id = Objects.requireNonNull(id, "NotificationId cannot be null");
         this.userId = Objects.requireNonNull(userId, "UserId cannot be null");
         this.type = Objects.requireNonNull(type, "NotificationType cannot be null");
@@ -39,11 +40,35 @@ public class Notification {
         validateMessage();
     }
 
+    /**
+     * Notificación SIN contrato
+     */
+    public static Notification create(Long userId,
+                                      NotificationType type,
+                                      String title,
+                                      String message) {
+
+        return new Notification(
+                NotificationId.generate(),
+                userId,
+                type,
+                title,
+                message,
+                false,
+                null,
+                LocalDateTime.now()
+        );
+    }
+
+    /**
+     * Notificación CON contrato
+     */
     public static Notification create(Long userId,
                                       NotificationType type,
                                       String title,
                                       String message,
                                       ContractId contractId) {
+
         return new Notification(
                 NotificationId.generate(),
                 userId,
@@ -64,6 +89,7 @@ public class Notification {
                                             boolean read,
                                             ContractId contractId,
                                             LocalDateTime createdAt) {
+
         return new Notification(
                 id,
                 userId,
@@ -80,21 +106,31 @@ public class Notification {
         if (this.read) {
             return;
         }
+
         this.read = true;
     }
 
     private void validateTitle() {
+
         if (title.isBlank()) {
-            throw new IllegalArgumentException("Notification title cannot be blank");
+            throw new IllegalArgumentException(
+                    "Notification title cannot be blank"
+            );
         }
+
         if (title.length() > 255) {
-            throw new IllegalArgumentException("Notification title cannot exceed 255 characters");
+            throw new IllegalArgumentException(
+                    "Notification title cannot exceed 255 characters"
+            );
         }
     }
 
     private void validateMessage() {
+
         if (message.isBlank()) {
-            throw new IllegalArgumentException("Notification message cannot be blank");
+            throw new IllegalArgumentException(
+                    "Notification message cannot be blank"
+            );
         }
     }
 

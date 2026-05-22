@@ -136,12 +136,12 @@ public class PaymentHistoryPdfGenerator {
                 ? history.nextPaymentDueDate().format(DATE_FORMATTER)
                 : "No hay pagos pendientes";
 
-        String monthlyRentFormatted = formatCurrency(history.monthlyRent());
+        String periodRentFormatted = formatCurrency(history.periodRent());
 
         Cell infoCell = new Cell()
                 .add(new Paragraph("PROPIEDAD: " + history.propertyTitle())
                         .setFont(regularFont).setFontSize(10).setFontColor(DARK_GRAY))
-                .add(new Paragraph("CANON MENSUAL: " + monthlyRentFormatted)
+                .add(new Paragraph("VALOR POR PERÍODO: " + periodRentFormatted)
                         .setFont(regularFont).setFontSize(10).setFontColor(DARK_GRAY))
                 .add(new Paragraph("PRÓXIMO PAGO: " + nextPaymentDate)
                         .setFont(regularFont).setFontSize(10).setFontColor(DARK_GRAY))

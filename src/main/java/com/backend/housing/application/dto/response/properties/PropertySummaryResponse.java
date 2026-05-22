@@ -1,5 +1,6 @@
 package com.backend.housing.application.dto.response.properties;
 
+import com.backend.housing.domain.entity.properties.enums.PropertyStatus;
 import com.backend.housing.domain.entity.properties.enums.TransactionType;
 import java.math.BigDecimal;
 import java.util.List;
@@ -11,5 +12,7 @@ public record PropertySummaryResponse(
         String description,
         TransactionType transactionType,
         BigDecimal priceAmount,
-        List<String> imageUrls
-) {}
+        List<String> imageUrls,
+        PropertyStatus status
+
+        ) {}

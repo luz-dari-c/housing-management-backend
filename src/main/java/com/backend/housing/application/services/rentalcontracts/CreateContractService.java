@@ -6,7 +6,7 @@ import com.backend.housing.domain.entity.properties.enums.PaymentFrequency;
 import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 import com.backend.housing.domain.entity.rentalcontracts.RentalContract;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.DateRange;
-import com.backend.housing.domain.entity.rentalcontracts.valueobjects.MonthlyRent;
+import com.backend.housing.domain.entity.rentalcontracts.valueobjects.PeriodRent;
 import com.backend.housing.domain.entity.users.User;
 import com.backend.housing.domain.ports.in.rentalcontracts.CreateContractUseCase;
 import com.backend.housing.domain.ports.out.external.PropertyServicePort;
@@ -48,7 +48,7 @@ public class CreateContractService implements CreateContractUseCase {
 
         DateRange period = DateRange.of(command.getStartDate(), command.getEndDate());
 
-        MonthlyRent monthlyRent = resolveMonthlyRent(property, command);
+        PeriodRent periodRent = resolvePeriodRent(property, command);
 
         PaymentFrequency paymentFrequency = property.getRentalTerms().getPaymentFrequency();
 
@@ -58,7 +58,7 @@ public class CreateContractService implements CreateContractUseCase {
                 command.getTenantId(),
                 owner.getId(),
                 period,
-                monthlyRent,
+                periodRent,
                 paymentFrequency
         );
 
@@ -71,20 +71,20 @@ public class CreateContractService implements CreateContractUseCase {
 
     private void validateTenant(Long tenantId) {
         if (!userService.userExists(tenantId)) {
-            throw new IllegalArgumentException("Tenant does not exist: " + tenantId);
+            throw new IllegalArgumentException("El tenant no existe: " + tenantId);
         }
     }
 
     private Property getValidProperty(PropertyId propertyId, User owner) {
         Property property = propertyService.getPropertyBasicInfo(propertyId)
-                .orElseThrow(() -> new IllegalArgumentException("Property not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Propiedad no encontrada"));
 
         if (!property.getOwnerId().equals(owner.getId())) {
-            throw new SecurityException("User is not the owner of the property");
+            throw new SecurityException("Usuario no autorizado para crear contrato en esta propiedad");
         }
 
         if (!propertyService.isAvailableForRent(propertyId)) {
-            throw new IllegalStateException("Property is not available for rent");
+            throw new IllegalStateException("Propiedad no está disponible para renta");
         }
 
         return property;
@@ -92,14 +92,14 @@ public class CreateContractService implements CreateContractUseCase {
 
     private void validateBusinessRules(PropertyId propertyId) {
         if (contractRepository.existsActiveByPropertyId(propertyId)) {
-            throw new IllegalStateException("Property already has an active contract");
+            throw new IllegalStateException("Propiedad ya tiene un contrato activo");
         }
     }
 
-    private MonthlyRent resolveMonthlyRent(Property property, CreateContractCommand command) {
+    private PeriodRent resolvePeriodRent(Property property, CreateContractCommand command) {
 
         if (!property.getPrice().isForRent()) {
-            throw new IllegalStateException("Property is not configured for rent");
+            throw new IllegalStateException("Propiedad no tiene un precio de renta válido");
         }
 
         BigDecimal basePrice = property.getPriceAmount();
@@ -109,10 +109,10 @@ public class CreateContractService implements CreateContractUseCase {
                 : basePrice;
 
         if (finalPrice.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Monthly rent must be greater than zero");
+            throw new IllegalArgumentException("El precio de renta debe ser mayor que cero");
         }
 
-        return MonthlyRent.of(finalPrice);
+        return PeriodRent.of(finalPrice);
     }
 
     private User getAuthenticatedUser() {

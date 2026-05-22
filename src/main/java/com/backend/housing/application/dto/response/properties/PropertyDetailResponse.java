@@ -1,5 +1,6 @@
 package com.backend.housing.application.dto.response.properties;
 
+import com.backend.housing.domain.entity.properties.enums.PaymentFrequency;
 import com.backend.housing.domain.entity.properties.enums.PropertyStatus;
 import com.backend.housing.domain.entity.properties.enums.TransactionType;
 import com.backend.housing.domain.entity.properties.enums.TypeProperty;
@@ -20,6 +21,7 @@ public record PropertyDetailResponse(
         TypeProperty typeProperty,
         PropertyStatus status,
         Long ownerId,
+        LocalDateTime createdAt,
         LocalDateTime updatedAt,
         LocalDateTime publishedAt,
         List<String> imageUrls,
@@ -28,5 +30,6 @@ public record PropertyDetailResponse(
         Integer areaInSquareMeters,
         boolean petsAllowed,
         boolean furnished,
-        Address address
+        Address address,
+        PaymentFrequency paymentFrequency
 ) {}

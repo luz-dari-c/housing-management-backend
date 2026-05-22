@@ -32,6 +32,11 @@ public class UserValidationAdapter implements UserValidationPort {
                 .map(this::buildFullName);
     }
 
+    @Override
+    public Optional<User> findByUserId(Long userId) {
+        return userRepositoryPort.findById(userId);
+    }
+
     private String buildFullName(User user) {
         StringBuilder fullName = new StringBuilder();
 

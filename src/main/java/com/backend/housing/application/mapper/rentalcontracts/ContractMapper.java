@@ -6,6 +6,7 @@ import com.backend.housing.application.dto.response.rentalcontracts.ContractResp
 import com.backend.housing.domain.entity.properties.Property;
 import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 import com.backend.housing.domain.entity.rentalcontracts.RentalContract;
+import com.backend.housing.domain.entity.users.User;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -26,24 +27,43 @@ public class ContractMapper {
     }
 
     public ContractResponse toResponse(RentalContract contract, Property property,
-                                       String tenantName, String ownerName) {
+                                       User tenant, User owner) {
 
-        if (contract == null || property == null) return null;
+        if (contract == null || property == null || tenant == null || owner == null) return null;
+
+        String tenantFullName = buildFullName(tenant);
+        String ownerFullName = buildFullName(owner);
 
         return new ContractResponse(
                 contract.getId().getValue(),
                 contract.getPropertyId().getValue(),
                 property.getTitle(),
                 contract.getTenantId(),
-                tenantName,
+                tenantFullName,
+                tenant.getCedula(),
                 contract.getOwnerId(),
-                ownerName,
+                ownerFullName,
+                owner.getCedula(),
                 contract.getPeriod().getStartDate(),
                 contract.getPeriod().getEndDate(),
-                contract.getMonthlyRent().getAmount(),
+                contract.getPeriodRent().getAmount(),
                 contract.getStatus(),
                 contract.getCreatedAt(),
                 contract.getPaymentFrequency()
         );
+    }
+
+    private String buildFullName(User user) {
+        String firstName = user.getPrimerNombre() != null ? user.getPrimerNombre() : "";
+        String secondName = user.getSegundoNombre() != null ? user.getSegundoNombre() : "";
+        String firstLastName = user.getPrimerApellido() != null ? user.getPrimerApellido() : "";
+        String secondLastName = user.getSegundoApellido() != null ? user.getSegundoApellido() : "";
+
+        String fullName = firstName;
+        if (!secondName.isEmpty()) fullName += " " + secondName;
+        fullName += " " + firstLastName;
+        if (!secondLastName.isEmpty()) fullName += " " + secondLastName;
+
+        return fullName.trim();
     }
 }
