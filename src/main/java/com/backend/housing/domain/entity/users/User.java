@@ -1,6 +1,8 @@
 package com.backend.housing.domain.entity.users;
 
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class User {
     private Long id;
@@ -97,6 +99,7 @@ public class User {
         return phoneNumber;
     }
 
+
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
@@ -123,5 +126,11 @@ public class User {
 
     public void setRol(Set<Rol> roles) {
         this.roles = roles;
+    }
+
+    public String getFullName() {
+        return Stream.of(primerNombre, segundoNombre, primerApellido, segundoApellido)
+                .filter(part -> part != null && !part.isBlank())
+                .collect(Collectors.joining(" "));
     }
 }

@@ -1,11 +1,9 @@
 package com.backend.housing.application.mapper.properties;
 
-import com.backend.housing.application.dto.response.properties.CreatePropertyResponse;
-import com.backend.housing.application.dto.response.properties.PropertyDetailResponse;
-import com.backend.housing.application.dto.response.properties.PropertySummaryResponse;
-import com.backend.housing.application.dto.response.properties.UpdatePropertyResponse;
+import com.backend.housing.application.dto.response.properties.*;
 import com.backend.housing.domain.entity.properties.Property;
 import com.backend.housing.domain.entity.properties.valueObjects.RentalTerms;
+import com.backend.housing.domain.entity.users.User;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -37,12 +35,15 @@ public class PropertyResponseMapper {
         );
     }
 
-    public PropertyDetailResponse toDetailResponse(Property property) {
+    public PropertyDetailResponse toDetailResponse(Property property, User owner) {
         RentalTerms rentalTerms = property.getRentalTerms();
 
-        Boolean petsAllowed = rentalTerms != null ? rentalTerms.isPetsAllowed() : null;
-        Boolean furnished = rentalTerms != null ? rentalTerms.isFurnished() : null;
-
+        OwnerSummary ownerSummary = new OwnerSummary(
+                owner.getId(),
+                owner.getFullName(),
+                owner.getEmail(),
+                owner.getPhoneNumber()
+        );
 
         return new PropertyDetailResponse(
                 property.getId().getValue(),
@@ -53,7 +54,7 @@ public class PropertyResponseMapper {
                 property.getPriceAmount(),
                 property.getTypeProperty(),
                 property.getStatus(),
-                property.getOwnerId(),
+                ownerSummary,
                 property.getCreatedAt(),
                 property.getUpdatedAt(),
                 property.getPublishedAt(),
@@ -61,11 +62,10 @@ public class PropertyResponseMapper {
                 property.getNumberOfBedrooms(),
                 property.getNumberOfBathrooms(),
                 property.getAreaInSquareMeters(),
-                petsAllowed,
-                furnished,
+                rentalTerms != null && rentalTerms.isPetsAllowed(),
+                rentalTerms != null && rentalTerms.isFurnished(),
                 property.getAddress(),
                 rentalTerms != null ? rentalTerms.getPaymentFrequency() : null
-
         );
     }
 

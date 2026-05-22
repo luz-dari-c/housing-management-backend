@@ -20,7 +20,7 @@ public record PropertyDetailResponse(
         BigDecimal priceAmount,
         TypeProperty typeProperty,
         PropertyStatus status,
-        Long ownerId,
+        OwnerSummary owner,
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
         LocalDateTime publishedAt,

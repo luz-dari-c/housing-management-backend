@@ -113,8 +113,8 @@ public class PropertyController {
     @Operation(summary = "Obtener propiedad con todos los detalles")
     @GetMapping("/{id}")
     public ResponseEntity<PropertyDetailResponse> getProperty(@PathVariable UUID id) {
-        Property property = getPropertyUseCase.getProperty(PropertyId.of(id));
-        return ResponseEntity.ok(propertyResponseMapper.toDetailResponse(property));
+        PropertyDetailResponse response = getPropertyUseCase.getPropertyDetail(PropertyId.of(id));
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Obtener la lista de todas las propiedades")
