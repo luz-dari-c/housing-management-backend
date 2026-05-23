@@ -1,5 +1,6 @@
 package com.backend.housing.application.mapper.rentalcontracts;
 
+import com.backend.housing.application.dto.response.auth.UserSummary;
 import com.backend.housing.application.commands.rentalcontracts.CreateRentalRequestCommand;
 import com.backend.housing.application.dto.request.rentalcontracts.CreateRentalRequestRequest;
 import com.backend.housing.application.dto.response.rentalcontracts.RentalRequestResponse;
@@ -7,6 +8,7 @@ import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 import com.backend.housing.domain.entity.rentalcontracts.RentalRequest;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.DateRange;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.RequestId;
+import com.backend.housing.domain.entity.users.User;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -30,15 +32,27 @@ public class RentalRequestMapper {
         );
     }
 
-    public RentalRequestResponse toResponse(RentalRequest rentalRequest) {
+    public RentalRequestResponse toResponse(RentalRequest rentalRequest, User tenant, User owner) {
         String message = "Tu solicitud de arriendo ha sido enviada exitosamente";
         String nextStep = "Espera a que el propietario responda tu solicitud. Puedes cancelarla en cualquier momento mientras esté pendiente.";
+
+        UserSummary tenantSummary = new UserSummary(
+                tenant.getId(),
+                tenant.getFullName(),
+                tenant.getEmail()
+        );
+
+        UserSummary ownerSummary = new UserSummary(
+                owner.getId(),
+                owner.getFullName(),
+                owner.getEmail()
+        );
 
         return new RentalRequestResponse(
                 rentalRequest.getId().getValue().toString(),
                 rentalRequest.getPropertyId(),
-                rentalRequest.getTenantId(),
-                rentalRequest.getOwnerId(),
+                tenantSummary,
+                ownerSummary,
                 rentalRequest.getPeriod().getStartDate().atStartOfDay(),
                 rentalRequest.getPeriod().getEndDate().atStartOfDay(),
                 rentalRequest.getProposedRent(),

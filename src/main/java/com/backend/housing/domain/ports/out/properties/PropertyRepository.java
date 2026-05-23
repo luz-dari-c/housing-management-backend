@@ -29,4 +29,5 @@ public interface PropertyRepository {
     List<Property> findByOwnerIdAndPropertyStatusNot(Long ownerId, PropertyStatus status, Pagination pagination);
 
 
+
 }

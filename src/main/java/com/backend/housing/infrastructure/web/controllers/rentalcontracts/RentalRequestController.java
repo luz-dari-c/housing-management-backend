@@ -55,23 +55,32 @@ public class RentalRequestController {
     public ResponseEntity<RentalRequestResponse> createRentalRequest(
             @Valid @RequestBody CreateRentalRequestRequest request) {
 
-        User user = getAuthenticatedUser();
+        User currentUser = getAuthenticatedUser();
 
-        CreateRentalRequestCommand command = rentalRequestMapper.toCommand(request, user.getId());
+        CreateRentalRequestCommand command = rentalRequestMapper.toCommand(request, currentUser.getId());
         RentalRequest rentalRequest = createRentalRequestUseCase.create(command);
 
-        RentalRequestResponse response = rentalRequestMapper.toResponse(rentalRequest);
+        User owner = userValidationPort.findByUserId(rentalRequest.getOwnerId())
+                .orElseThrow(() -> new RuntimeException("Propietario no encontrado"));
+
+        RentalRequestResponse response = rentalRequestMapper.toResponse(rentalRequest, currentUser, owner);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(summary = "Listar solicitudes de un propietario")
     @GetMapping("/owner")
     public ResponseEntity<List<RentalRequestResponse>> getRequestsByOwner() {
-        User user = getAuthenticatedUser();
-        List<RentalRequest> requests = getRentalRequestUseCase.getRequestsByOwner(user.getId());
+        User currentUser = getAuthenticatedUser();
+        List<RentalRequest> requests = getRentalRequestUseCase.getRequestsByOwner(currentUser.getId());
 
         List<RentalRequestResponse> responses = requests.stream()
-                .map(rentalRequestMapper::toResponse)
+                .map(request -> {
+                    User tenant = userValidationPort.findByUserId(request.getTenantId())
+                            .orElseThrow(() -> new RuntimeException("Arrendatario no encontrado"));
+                    User owner = userValidationPort.findByUserId(request.getOwnerId())
+                            .orElseThrow(() -> new RuntimeException("Propietario no encontrado"));
+                    return rentalRequestMapper.toResponse(request, tenant, owner);
+                })
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(responses);
@@ -80,11 +89,17 @@ public class RentalRequestController {
     @Operation(summary = "Listar solicitudes de un arrendatario")
     @GetMapping("/tenant")
     public ResponseEntity<List<RentalRequestResponse>> getRequestsByTenant() {
-        User user = getAuthenticatedUser();
-        List<RentalRequest> requests = getRentalRequestUseCase.getRequestsByTenant(user.getId());
+        User currentUser = getAuthenticatedUser();
+        List<RentalRequest> requests = getRentalRequestUseCase.getRequestsByTenant(currentUser.getId());
 
         List<RentalRequestResponse> responses = requests.stream()
-                .map(rentalRequestMapper::toResponse)
+                .map(request -> {
+                    User tenant = userValidationPort.findByUserId(request.getTenantId())
+                            .orElseThrow(() -> new RuntimeException("Arrendatario no encontrado"));
+                    User owner = userValidationPort.findByUserId(request.getOwnerId())
+                            .orElseThrow(() -> new RuntimeException("Propietario no encontrado"));
+                    return rentalRequestMapper.toResponse(request, tenant, owner);
+                })
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(responses);
