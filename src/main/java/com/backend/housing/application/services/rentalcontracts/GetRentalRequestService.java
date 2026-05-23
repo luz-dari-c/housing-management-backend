@@ -7,7 +7,6 @@ import com.backend.housing.domain.ports.out.rentalcontracts.RentalRequestReposit
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -23,7 +22,7 @@ public class GetRentalRequestService implements GetRentalRequestUseCase {
     public RentalRequest getRequestById(UUID requestId, Long userId) {
         RequestId id = RequestId.of(requestId.toString());
         RentalRequest request = rentalRequestRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Rental request not found"));
+                .orElseThrow(() -> new RuntimeException("Solicitud de arriendo no encontrada"));
 
         if (!request.getOwnerId().equals(userId) && !request.getTenantId().equals(userId)) {
             throw new RuntimeException("Usuario no autorizado para ver esta solicitud");
@@ -34,11 +33,13 @@ public class GetRentalRequestService implements GetRentalRequestUseCase {
 
     @Override
     public List<RentalRequest> getRequestsByTenant(Long tenantId) {
-        return rentalRequestRepository.findByTenantId(tenantId);
+        List<RentalRequest> requests = rentalRequestRepository.findByTenantId(tenantId);
+        return requests;
     }
 
     @Override
     public List<RentalRequest> getRequestsByOwner(Long ownerId) {
-        return rentalRequestRepository.findByOwnerId(ownerId);
+        List<RentalRequest> requests = rentalRequestRepository.findByOwnerId(ownerId);
+        return requests;
     }
 }

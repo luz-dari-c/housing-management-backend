@@ -1,7 +1,5 @@
 package com.backend.housing.domain.entity.rentalcontracts.valueobjects;
 
-
-
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -9,24 +7,39 @@ public class DateRange {
     private final LocalDate startDate;
     private final LocalDate endDate;
 
-    public DateRange(LocalDate startDate, LocalDate endDate) {
-        if (startDate == null) {
-            throw new IllegalArgumentException("Start date cannot be null");
-        }
-        if (endDate == null) {
-            throw new IllegalArgumentException("End date cannot be null");
-        }
-        if (endDate.isBefore(startDate)) {
-            throw new IllegalArgumentException("End date must be after start date");
-        }
-        if (startDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Start date cannot be in the past");
-        }
+    private DateRange(LocalDate startDate, LocalDate endDate) {
         this.startDate = startDate;
         this.endDate = endDate;
     }
 
+    // Para CREAR NUEVOS (con validación de fecha futura)
+    public static DateRange crear(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null) {
+            throw new IllegalArgumentException("La fecha de inicio no puede ser nula");
+        }
+        if (endDate == null) {
+            throw new IllegalArgumentException("La fecha de fin no puede ser nula");
+        }
+        if (endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("La fecha de fin debe ser posterior a la fecha de inicio");
+        }
+        if (startDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("La fecha de inicio no puede ser en el pasado");
+        }
+        return new DateRange(startDate, endDate);
+    }
+
+    // Para RECONSTRUIR desde BD (SIN validación de fecha pasada)
     public static DateRange of(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null) {
+            throw new IllegalArgumentException("La fecha de inicio no puede ser nula");
+        }
+        if (endDate == null) {
+            throw new IllegalArgumentException("La fecha de fin no puede ser nula");
+        }
+        if (endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("La fecha de fin debe ser posterior a la fecha de inicio");
+        }
         return new DateRange(startDate, endDate);
     }
 

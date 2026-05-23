@@ -6,6 +6,7 @@ import com.backend.housing.domain.entity.rentalcontracts.valueobjects.DateRange;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.RequestId;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
@@ -51,12 +52,14 @@ public class RentalRequest {
             PropertyId propertyId,
             Long tenantId,
             Long ownerId,
-            DateRange period,
+            LocalDate startDate,
+            LocalDate endDate,
             BigDecimal proposedRent,
             RentalRequestStatus status,
             LocalDateTime createdAt,
             LocalDateTime respondedAt
     ) {
+        DateRange period = DateRange.of(startDate, endDate);
         return new RentalRequest(
                 id,
                 propertyId,
@@ -73,9 +76,11 @@ public class RentalRequest {
     public static RentalRequest create(PropertyId propertyId,
                                        Long tenantId,
                                        Long ownerId,
-                                       DateRange period,
+                                       LocalDate startDate,
+                                       LocalDate endDate,
                                        BigDecimal proposedRent) {
 
+        DateRange period = DateRange.crear(startDate, endDate);
         return new RentalRequest(
                 RequestId.generate(),
                 propertyId,
@@ -91,19 +96,19 @@ public class RentalRequest {
 
     private void validateUsers() {
         if (tenantId.equals(ownerId)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("El arrendatario y el propietario no pueden ser la misma persona");
         }
     }
 
     private void validateProposedRent() {
         if (proposedRent != null && proposedRent.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("El arriendo propuesto debe ser mayor que cero");
         }
     }
 
     public void accept() {
         if (status != RentalRequestStatus.PENDING) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Solo las solicitudes PENDIENTES pueden ser aceptadas");
         }
         this.status = RentalRequestStatus.ACCEPTED;
         this.respondedAt = LocalDateTime.now();
@@ -111,7 +116,7 @@ public class RentalRequest {
 
     public void reject() {
         if (status != RentalRequestStatus.PENDING) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Solo las solicitudes PENDIENTES pueden ser rechazadas");
         }
         this.status = RentalRequestStatus.REJECTED;
         this.respondedAt = LocalDateTime.now();
@@ -119,7 +124,7 @@ public class RentalRequest {
 
     public void cancel() {
         if (!isPending()) {
-            throw new IllegalStateException("Solo se pueden cancelar solicitudes en estado PENDING");
+            throw new IllegalStateException("Solo las solicitudes PENDIENTES pueden ser canceladas");
         }
         this.status = RentalRequestStatus.CANCELLED;
     }

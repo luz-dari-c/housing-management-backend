@@ -22,13 +22,12 @@ public class CreateRentalRequestService implements CreateRentalRequestUseCase {
     private final RentalRequestRepository repository;
     private final PropertyServicePort propertyService;
     private final UserValidationPort userService;
-    private final NotifyRequestSendUseCase notifyRequestSend;;
+    private final NotifyRequestSendUseCase notifyRequestSend;
 
     public CreateRentalRequestService(RentalRequestRepository repository,
                                       PropertyServicePort propertyService,
                                       UserValidationPort userService,
-                                        NotifyRequestSendUseCase notifyRequestSend
-                                      ) {
+                                      NotifyRequestSendUseCase notifyRequestSend) {
         this.repository = repository;
         this.propertyService = propertyService;
         this.userService = userService;
@@ -57,9 +56,9 @@ public class CreateRentalRequestService implements CreateRentalRequestUseCase {
 
         LocalDate endDate = calculateEndDate(command.getStartDate(), command.getDuration(), frequency);
 
-        DateRange period;
+          DateRange period;
         try {
-            period = DateRange.of(command.getStartDate(), endDate);
+            period = DateRange.crear(command.getStartDate(), endDate);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rango de fechas inválido: " + e.getMessage());
         }
@@ -68,15 +67,14 @@ public class CreateRentalRequestService implements CreateRentalRequestUseCase {
                 command.getPropertyId(),
                 command.getTenantId(),
                 property.getOwnerId(),
-                period,
+                command.getStartDate(),
+                endDate,
                 command.getProposedRent()
         );
 
         notifyRequestSend.execute(request.getOwnerId());
 
         return repository.save(request);
-
-
     }
 
     private LocalDate calculateEndDate(LocalDate startDate, Integer duration, PaymentFrequency frequency) {

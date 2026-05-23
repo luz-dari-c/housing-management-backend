@@ -74,8 +74,9 @@ public class AcceptRentalRequestService implements AcceptRentalRequestUseCase {
                 property.getId(),
                 request.getTenantId(),
                 property.getOwnerId(),
-                request.getPeriod(),
-                PeriodRent.of(finalPrice),
+                request.getPeriod().getStartDate(),
+                request.getPeriod().getEndDate(),
+                finalPrice,
                 paymentFrequency
         );
 
@@ -90,7 +91,6 @@ public class AcceptRentalRequestService implements AcceptRentalRequestUseCase {
         propertyRepository.save(property);
 
         notifyRequestAcceptedUseCase.execute(savedContract.getTenantId(), savedContract.getId());
-
 
         String message = "Solicitud de arriendo aceptada exitosamente";
         String nextStep = "El contrato ha sido creado. El arrendatario debe realizar el pago del primer canon para activar el contrato.";

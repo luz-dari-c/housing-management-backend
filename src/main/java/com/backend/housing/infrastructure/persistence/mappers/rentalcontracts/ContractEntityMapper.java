@@ -1,4 +1,5 @@
 package com.backend.housing.infrastructure.persistence.mappers.rentalcontracts;
+
 import com.backend.housing.domain.entity.properties.enums.PaymentFrequency;
 import com.backend.housing.domain.entity.properties.valueObjects.PropertyId;
 import com.backend.housing.domain.entity.rentalcontracts.Enums.ContractStatus;
@@ -9,6 +10,7 @@ import com.backend.housing.domain.entity.rentalcontracts.valueobjects.PeriodRent
 import com.backend.housing.infrastructure.persistence.entities.rentalcontract.RentalContractEntity;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 
 @Component
 public class ContractEntityMapper {
@@ -33,22 +35,22 @@ public class ContractEntityMapper {
     }
 
     public RentalContract toDomain(RentalContractEntity entity) {
-
         ContractId contractId = ContractId.of(entity.getId());
         PropertyId propertyId = PropertyId.of(entity.getPropertyId());
+
         DateRange period = DateRange.of(entity.getStartDate(), entity.getEndDate());
         PeriodRent periodRent = PeriodRent.of(entity.getPeriodRent());
         ContractStatus status = ContractStatus.valueOf(entity.getStatus());
-        PaymentFrequency paymentFrequency =
-                PaymentFrequency.valueOf(entity.getPaymentFrequency());
+        PaymentFrequency paymentFrequency = PaymentFrequency.valueOf(entity.getPaymentFrequency());
 
         return RentalContract.reconstitute(
                 contractId,
                 propertyId,
                 entity.getTenantId(),
                 entity.getOwnerId(),
-                period,
-                periodRent,
+                entity.getStartDate(),
+                entity.getEndDate(),
+                entity.getPeriodRent(),
                 paymentFrequency,
                 status,
                 entity.getCreatedAt(),

@@ -29,15 +29,18 @@ public class RentalRequestEntityMapper {
     }
 
     public RentalRequest toDomain(RentalRequestEntity entity) {
+        DateRange period = DateRange.of(
+                entity.getStartDate().toLocalDate(),
+                entity.getEndDate().toLocalDate()
+        );
+
         return RentalRequest.fromPersistence(
                 new RequestId(entity.getId()),
                 new PropertyId(UUID.fromString(entity.getPropertyId())),
                 entity.getTenantId(),
                 entity.getOwnerId(),
-                new DateRange(
-                        entity.getStartDate().toLocalDate(),
-                        entity.getEndDate().toLocalDate()
-                ),
+                period.getStartDate(),
+                period.getEndDate(),
                 entity.getProposedRent(),
                 RentalRequestStatus.valueOf(entity.getStatus()),
                 entity.getCreatedAt(),

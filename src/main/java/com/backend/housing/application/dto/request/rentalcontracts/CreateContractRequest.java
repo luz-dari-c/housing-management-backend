@@ -13,27 +13,27 @@ import java.util.UUID;
 @Setter
 public class CreateContractRequest {
 
-    @NotNull(message = "Property ID is required")
+    @NotNull(message = "El ID de la propiedad es obligatorio")
     private UUID propertyId;
 
-    @NotNull(message = "Tenant ID is required")
+    @NotNull(message = "El ID del arrendatario es obligatorio")
     private Long tenantId;
 
-    @NotNull(message = "Start date is required")
-    @FutureOrPresent(message = "Start date cannot be in the past")
+    @NotNull(message = "La fecha de inicio es obligatoria")
+    @FutureOrPresent(message = "La fecha de inicio no puede ser anterior a hoy")
     private LocalDate startDate;
 
-    @NotNull(message = "End date is required")
+    @NotNull(message = "La fecha de finalización es obligatoria")
     private LocalDate endDate;
 
-    @NotNull(message = "Monthly rent is required")
-    @DecimalMin(value = "0.01", message = "Monthly rent must be greater than zero")
+    @NotNull(message = "El valor del periodo del arriendo es obligatorio")
+    @DecimalMin(value = "0.01", message = "El valor del periodo del arriendo debe ser mayor que cero")
     private BigDecimal monthlyRent;
 
-    @NotNull(message = "Payment frequency is required")
+    @NotNull(message = "La frecuencia de pago es obligatoria")
     private PaymentFrequency paymentFrequency;
 
-    @AssertTrue(message = "End date must be after start date")
+    @AssertTrue(message = "La fecha de finalización debe ser posterior a la fecha de inicio")
     public boolean isDateRangeValid() {
         if (startDate == null || endDate == null) return true;
         return endDate.isAfter(startDate);

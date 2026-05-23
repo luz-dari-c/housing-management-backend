@@ -7,6 +7,7 @@ import com.backend.housing.domain.entity.rentalcontracts.valueobjects.ContractId
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.DateRange;
 import com.backend.housing.domain.entity.rentalcontracts.valueobjects.PeriodRent;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -61,9 +62,13 @@ public class RentalContract {
     public static RentalContract create(PropertyId propertyId,
                                         Long tenantId,
                                         Long ownerId,
-                                        DateRange period,
-                                        PeriodRent periodRent,
+                                        LocalDate startDate,
+                                        LocalDate endDate,
+                                        BigDecimal monthlyRentAmount,
                                         PaymentFrequency paymentFrequency) {
+
+        DateRange period = DateRange.crear(startDate, endDate);
+        PeriodRent periodRent = PeriodRent.of(monthlyRentAmount);
 
         return new RentalContract(
                 ContractId.empty(),
@@ -86,8 +91,9 @@ public class RentalContract {
                                               PropertyId propertyId,
                                               Long tenantId,
                                               Long ownerId,
-                                              DateRange period,
-                                              PeriodRent periodRent,
+                                              LocalDate startDate,
+                                              LocalDate endDate,
+                                              BigDecimal monthlyRentAmount,
                                               PaymentFrequency paymentFrequency,
                                               ContractStatus status,
                                               LocalDateTime createdAt,
@@ -95,6 +101,9 @@ public class RentalContract {
                                               LocalDate actualStartDate,
                                               LocalDate paymentDueDate,
                                               LocalDate effectiveCancellationDate) {
+
+        DateRange period = DateRange.of(startDate, endDate);
+        PeriodRent periodRent = PeriodRent.of(monthlyRentAmount);
 
         return new RentalContract(
                 id,
@@ -120,7 +129,6 @@ public class RentalContract {
 
         this.actualStartDate = this.period.getStartDate();
 
-        // Si el pago se hizo antes de la fecha de inicio, va a estado intermedio
         if (paymentConfirmedDate.isBefore(this.period.getStartDate())) {
             this.status = ContractStatus.PAID_NOT_STARTED;
         } else {
@@ -167,7 +175,6 @@ public class RentalContract {
         this.status = ContractStatus.CANCELLED;
         this.terminatedAt = LocalDateTime.now();
     }
-
 
     public void scheduleCancellation(LocalDate effectiveDate) {
         if (status != ContractStatus.ACTIVE) {

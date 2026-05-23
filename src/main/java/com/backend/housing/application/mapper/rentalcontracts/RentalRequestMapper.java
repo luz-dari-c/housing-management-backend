@@ -18,7 +18,7 @@ import java.util.UUID;
 public class RentalRequestMapper {
 
     public RentalRequest toDomain(CreateRentalRequestRequest request, Long tenantId, Long ownerId, LocalDate endDate) {
-        DateRange period = new DateRange(
+        DateRange period = DateRange.crear(
                 LocalDate.parse(request.getStartDate()),
                 endDate
         );
@@ -27,7 +27,8 @@ public class RentalRequestMapper {
                 new PropertyId(UUID.fromString(request.getPropertyId())),
                 tenantId,
                 ownerId,
-                period,
+                LocalDate.parse(request.getStartDate()),
+                endDate,
                 request.getProposedRent()
         );
     }

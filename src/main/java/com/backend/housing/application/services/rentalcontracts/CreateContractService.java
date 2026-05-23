@@ -46,19 +46,20 @@ public class CreateContractService implements CreateContractUseCase {
 
         validateBusinessRules(command.getPropertyId());
 
-        DateRange period = DateRange.of(command.getStartDate(), command.getEndDate());
+
+        DateRange period = DateRange.crear(command.getStartDate(), command.getEndDate());
 
         PeriodRent periodRent = resolvePeriodRent(property, command);
 
         PaymentFrequency paymentFrequency = property.getRentalTerms().getPaymentFrequency();
 
-
         RentalContract contract = RentalContract.create(
                 command.getPropertyId(),
                 command.getTenantId(),
                 owner.getId(),
-                period,
-                periodRent,
+                command.getStartDate(),
+                command.getEndDate(),
+                periodRent.getAmount(),
                 paymentFrequency
         );
 
@@ -71,7 +72,7 @@ public class CreateContractService implements CreateContractUseCase {
 
     private void validateTenant(Long tenantId) {
         if (!userService.userExists(tenantId)) {
-            throw new IllegalArgumentException("El tenant no existe: " + tenantId);
+            throw new IllegalArgumentException("El arrendatario no existe: " + tenantId);
         }
     }
 
@@ -84,7 +85,7 @@ public class CreateContractService implements CreateContractUseCase {
         }
 
         if (!propertyService.isAvailableForRent(propertyId)) {
-            throw new IllegalStateException("Propiedad no está disponible para renta");
+            throw new IllegalStateException("La propiedad no está disponible para arriendo");
         }
 
         return property;
@@ -92,14 +93,14 @@ public class CreateContractService implements CreateContractUseCase {
 
     private void validateBusinessRules(PropertyId propertyId) {
         if (contractRepository.existsActiveByPropertyId(propertyId)) {
-            throw new IllegalStateException("Propiedad ya tiene un contrato activo");
+            throw new IllegalStateException("La propiedad ya tiene un contrato activo");
         }
     }
 
     private PeriodRent resolvePeriodRent(Property property, CreateContractCommand command) {
 
         if (!property.getPrice().isForRent()) {
-            throw new IllegalStateException("Propiedad no tiene un precio de renta válido");
+            throw new IllegalStateException("La propiedad no tiene un precio de arriendo válido");
         }
 
         BigDecimal basePrice = property.getPriceAmount();
@@ -109,7 +110,7 @@ public class CreateContractService implements CreateContractUseCase {
                 : basePrice;
 
         if (finalPrice.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("El precio de renta debe ser mayor que cero");
+            throw new IllegalArgumentException("El precio de arriendo debe ser mayor que cero");
         }
 
         return PeriodRent.of(finalPrice);
