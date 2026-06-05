@@ -28,7 +28,6 @@ public class ProfileService implements ProfileUseCase {
         User user = userRepositoryPort.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Actualizar solo los campos permitidos (NO cédula)
         if (request.getPrimerNombre() != null) user.setPrimerNombre(request.getPrimerNombre());
         if (request.getSegundoNombre() != null) user.setSegundoNombre(request.getSegundoNombre());
         if (request.getPrimerApellido() != null) user.setPrimerApellido(request.getPrimerApellido());

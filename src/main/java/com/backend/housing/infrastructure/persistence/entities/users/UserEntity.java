@@ -45,10 +45,10 @@ public class UserEntity {
     @Column(nullable = false)
     private String password;
     
-    @Column(name = "phone_number") // NUEVO
+    @Column(name = "phone_number")
     private String phoneNumber;
     
-    @Column(name = "profile_picture_url") // NUEVO
+    @Column(name = "profile_picture_url")
     private String profilePictureUrl;
     
     @Column(nullable = false)

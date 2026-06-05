@@ -9,7 +9,6 @@ import lombok.Setter;
 public class StartChatRequest {
     @NotNull(message = "El ID del propietario es obligatorio")
     private Long ownerId;
-
     @NotNull(message = "El ID de la propiedad es obligatorio")
     private Long propertyId;
 }

@@ -53,12 +53,10 @@ public class CancelContractService implements CancelContractUseCase {
         validateAccess(contract, user.getId());
         validateCancellable(contract);
 
-        // Contratos sin pagos o no iniciados se cancelan inmediatamente
         if (contract.getStatus() == ContractStatus.PAYMENT_PENDING) {
             return cancelImmediately(contract);
         }
 
-        // Determinar quién cancela
         boolean isOwner = contract.belongsToOwner(user.getId());
 
         if (isOwner) {
@@ -68,7 +66,7 @@ public class CancelContractService implements CancelContractUseCase {
         }
     }
 
-    // Cancelación inmediata (solo para PAYMENT_PENDING)
+
     private RentalContract cancelImmediately(RentalContract contract) {
         contract.cancelImmediately();
         RentalContract saved = contractRepository.save(contract);
@@ -77,7 +75,6 @@ public class CancelContractService implements CancelContractUseCase {
         return saved;
     }
 
-    // Cancelación por PROPIETARIO: 30 días fijos desde hoy
     private RentalContract scheduleCancellationByOwner(RentalContract contract) {
         LocalDate effectiveDate = LocalDate.now().plusDays(OWNER_CANCELLATION_DAYS);
         contract.scheduleCancellation(effectiveDate);
@@ -86,7 +83,6 @@ public class CancelContractService implements CancelContractUseCase {
         return saved;
     }
 
-    // Cancelación por ARRENDATARIO: respeta ciclos de pago (máximo 30 días)
     private RentalContract scheduleCancellationByTenant(RentalContract contract) {
         LocalDate effectiveDate = calculateEffectiveCancellationDateForTenant(contract);
         contract.scheduleCancellation(effectiveDate);
@@ -95,11 +91,6 @@ public class CancelContractService implements CancelContractUseCase {
         return saved;
     }
 
-    /**
-     * Calcula la fecha efectiva de cancelación para ARRENDATARIO:
-     * - Si el fin del período actual está a 30 días o menos → se usa esa fecha
-     * - Si está a más de 30 días → se usa hoy + 30 días, ajustado al siguiente fin de período
-     */
     private LocalDate calculateEffectiveCancellationDateForTenant(RentalContract contract) {
         LocalDate today = LocalDate.now();
         LocalDate currentPeriodEnd = contract.getPaymentDueDate();
@@ -110,15 +101,12 @@ public class CancelContractService implements CancelContractUseCase {
 
         long daysToCurrentEnd = ChronoUnit.DAYS.between(today, currentPeriodEnd);
 
-        // Si el período actual termina en 30 días o menos, usamos esa fecha
         if (daysToCurrentEnd <= OWNER_CANCELLATION_DAYS) {
             return currentPeriodEnd;
         }
 
-        // Si no, calculamos hoy + 30 días
         LocalDate targetDate = today.plusDays(OWNER_CANCELLATION_DAYS);
 
-        // Ajustamos al siguiente paymentDueDate (fin de período)
         LocalDate nextPeriodEnd = currentPeriodEnd;
         while (nextPeriodEnd.isBefore(targetDate)) {
             nextPeriodEnd = switch (contract.getPaymentFrequency()) {

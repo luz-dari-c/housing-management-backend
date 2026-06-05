@@ -29,7 +29,6 @@ public interface JpaRentalContractRepository extends JpaRepository<RentalContrac
     @Query("SELECT c FROM RentalContractEntity c WHERE c.status = 'ACTIVE'")
     List<RentalContractEntity> findAllActive();
 
-    // Contratos cuya cancelación programada ya venció — usados por el job nocturno
     @Query("SELECT c FROM RentalContractEntity c " +
             "WHERE c.status = 'CANCELLATION_PENDING' " +
             "AND c.effectiveCancellationDate <= :date")

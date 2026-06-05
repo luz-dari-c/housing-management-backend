@@ -19,8 +19,6 @@ public class RolEntity {
         this.name = name;
     }
 
-    // ===== GETTERS Y SETTERS =====
-
     public Long getId() {
         return id;
     }

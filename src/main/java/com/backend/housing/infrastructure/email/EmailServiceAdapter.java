@@ -23,7 +23,7 @@ public class EmailServiceAdapter implements EmailServicePort {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmail);
         message.setTo(toEmail);
-        message.setSubject("Recuperación de contraseña - Housing");
+        message.setSubject("Recuperación de contraseña - VOLTRIX HOUSE");
         message.setText(String.format("""
                 Hola,
                 
@@ -36,7 +36,7 @@ public class EmailServiceAdapter implements EmailServicePort {
                 Si no solicitaste este cambio, ignora este mensaje.
                 
                 Saludos,
-                Equipo Housing
+                Equipo VOLTRIX HOUSE
                 """, code));
 
         mailSender.send(message);

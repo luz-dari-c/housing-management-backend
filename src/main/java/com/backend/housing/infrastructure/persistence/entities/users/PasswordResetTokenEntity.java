@@ -23,7 +23,6 @@ public class PasswordResetTokenEntity {
     @Column(nullable = false)
     private boolean used;
 
-    // Getters y Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

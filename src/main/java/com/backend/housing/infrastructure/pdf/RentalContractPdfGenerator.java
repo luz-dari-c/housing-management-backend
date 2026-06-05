@@ -374,19 +374,33 @@ public class RentalContractPdfGenerator {
                         "Pagar el impuesto predial y las expensas comunes de administración"
                 }));
 
-        section.add(createClause("SEXTA", "MORA Y TERMINACIÓN",
-                "En caso de mora en el pago del canon de arrendamiento, se aplicará un interés de mora del uno punto cinco por ciento (1.5%) mensual " +
-                        "sobre el valor adeudado. El incumplimiento en el pago de dos (2) obligaciones consecutivas dará lugar a la terminación inmediata del contrato."));
+        section.add(createClause("SEXTA", "MORA Y TERMINACIÓN DEL CONTRATO",
+                "Si EL ARRENDATARIO no realiza el pago del canon dentro de los cinco (5) días calendario siguientes a la fecha de vencimiento, " +
+                        "el contrato expirará automáticamente sin necesidad de notificación previa. En caso de expiración, EL ARRENDATARIO deberá " +
+                        "desocupar el inmueble inmediatamente y entregarlo a EL ARRENDADOR en las mismas condiciones en que fue recibido."));
 
         section.add(createClause("SÉPTIMA", "CANCELACIÓN ANTICIPADA",
-                "Cualquiera de las partes podrá dar por terminado el contrato de manera anticipada mediante comunicación escrita " +
-                        "dirigida a la otra parte con una antelación mínima de treinta (30) días. En este caso, no habrá lugar a indemnización alguna."));
+                "El contrato podrá cancelarse anticipadamente bajo las siguientes reglas:\n\n" +
+                        "• Si EL ARRENDADOR (propietario) desea cancelar el contrato encontrándose en estado ACTIVO, deberá solicitarlo " +
+                        "con una antelación mínima de treinta (30) días calendario a la fecha efectiva de cancelación deseada.\n\n" +
+                        "• Si EL ARRENDATARIO desea cancelar el contrato, deberá solicitarlo con la antelación que las partes acuerden.\n\n" +
+                        "• Cuando el contrato se encuentra en estado PAID_NOT_STARTED, NO procederá la cancelación. " +
+                        "EL ARRENDATARIO deberá esperar a que el contrato se active para iniciar el proceso de cancelación."));
 
-        section.add(createClause("OCTAVA", "SOLUCIÓN DE CONTROVERSIAS",
-                "Las controversias que surjan con motivo del presente contrato se resolverán a través de conciliación extrajudicial " +
-                        "ante la Cámara de Comercio de Cartagena. En caso de no llegar a un acuerdo, las partes se someterán a la jurisdicción " +
-                        "ordinaria de los Jueces Civiles Municipales de Cartagena de Indias."));
+        section.add(createClause("OCTAVA", "ESTADOS DEL CONTRATO",
+                "El presente contrato podrá atravesar por los siguientes estados:\n\n" +
+                        "• PAYMENT_PENDING: Contrato creado, esperando el primer pago.\n\n" +
+                        "• PAID_NOT_STARTED: Primer pago realizado, fecha de inicio aún no llega. NO procede cancelación.\n\n" +
+                        "• ACTIVE: Contrato en vigencia.\n\n" +
+                        "• CANCELLATION_PENDING: Solicitud de cancelación en proceso.\n\n" +
+                        "• CANCELLED: Cancelado anticipadamente.\n\n" +
+                        "• TERMINATED: Finalizado por causa justificada.\n\n" +
+                        "• EXPIRED: Expirado por falta de pago."));
 
+        section.add(createClause("NOVENA", "EXPIRACIÓN POR FALTA DE PAGO",
+                "Se establece un período de gracia de cinco (5) días calendario después de cada fecha de vencimiento del canon. " +
+                        "Si transcurrido este plazo no se ha realizado el pago a través de Stripe, el contrato expirará automáticamente. " +
+                        "EL ARRENDATARIO deberá desalojar el inmueble dentro de los tres (3) días hábiles siguientes."));
         return section;
     }
 

@@ -1,7 +1,4 @@
 package com.backend.housing.domain.entity.properties.valueObjects;
-
-
-import com.backend.housing.domain.entity.properties.enums.RentModality;
 import com.backend.housing.domain.entity.properties.enums.TypeProperty;
 
 import java.math.BigDecimal;
@@ -51,7 +48,6 @@ public class SearchPropertyQuery {
         return typeProperty;
     }
 
-
     public Integer getBedrooms() {
         return bedrooms;
     }
@@ -63,8 +59,6 @@ public class SearchPropertyQuery {
     public Boolean getFurnished() {
         return furnished;
     }
-
-
 
     public boolean hasCity() {
         return city != null && !city.isBlank();
@@ -81,7 +75,6 @@ public class SearchPropertyQuery {
     public boolean hasTypeProperty() {
         return typeProperty != null;
     }
-
 
     public boolean hasBedrooms() {
         return bedrooms != null;

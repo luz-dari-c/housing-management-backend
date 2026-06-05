@@ -26,9 +26,8 @@ public class PropertyEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String description;
-
     @Embedded
     private CoordinatesEmbeddable coordinates;
 

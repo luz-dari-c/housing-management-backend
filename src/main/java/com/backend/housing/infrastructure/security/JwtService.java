@@ -17,7 +17,7 @@ public class JwtService {
 
     private final String SECRET = "ESTA_ES_UNA_LLAVE_MUY_SECRET_Y_LARGA_DE_32_CHARS";
 
-    @Value("${app.jwt.access-token-expiration:1800000}")
+    @Value("${app.jwt.access-token-expiration:3600000}")
     private long accessTokenExpiration;
 
     private SecretKey getSignKey() {

@@ -40,7 +40,6 @@ public class GetCancellationStatusService implements GetCancellationStatusUseCas
             throw new SecurityException("No tienes permiso para ver este contrato");
         }
 
-        // Si el contrato está en CANCELLATION_PENDING
         if (contract.getStatus() == ContractStatus.CANCELLATION_PENDING) {
             LocalDate effectiveDate = contract.getEffectiveCancellationDate();
             if (effectiveDate == null) {
@@ -67,7 +66,6 @@ public class GetCancellationStatusService implements GetCancellationStatusUseCas
             );
         }
 
-        // Si el contrato ya está cancelado
         if (contract.getStatus() == ContractStatus.CANCELLED) {
             return new CancellationStatusResponse(
                     contract.getId().getValue(),
@@ -79,7 +77,6 @@ public class GetCancellationStatusService implements GetCancellationStatusUseCas
             );
         }
 
-        // Si el contrato está activo sin cancelación pendiente
         return new CancellationStatusResponse(
                 contract.getId().getValue(),
                 contract.getStatus().name(),
@@ -91,8 +88,7 @@ public class GetCancellationStatusService implements GetCancellationStatusUseCas
     }
 
     private String determinarQuienCancelo(RentalContract contract, Long userId) {
-        // Intentar determinar quién solicitó la cancelación
-        // Como no guardamos quién canceló, verificamos el rol del usuario actual
+
         if (contract.belongsToOwner(userId)) {
             return "PROPIETARIO";
         } else if (contract.belongsToTenant(userId)) {

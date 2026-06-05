@@ -40,9 +40,7 @@ public class Notification {
         validateMessage();
     }
 
-    /**
-     * Notificación SIN contrato
-     */
+
     public static Notification create(Long userId,
                                       NotificationType type,
                                       String title,
@@ -60,9 +58,7 @@ public class Notification {
         );
     }
 
-    /**
-     * Notificación CON contrato
-     */
+
     public static Notification create(Long userId,
                                       NotificationType type,
                                       String title,

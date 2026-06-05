@@ -25,8 +25,8 @@ public class UserMapper {
         entity.setCedula(user.getCedula());
         entity.setEdad(user.getEdad());
         entity.setPassword(user.getPassword());
-        entity.setPhoneNumber(user.getPhoneNumber()); // NUEVO
-        entity.setProfilePictureUrl(user.getProfilePictureUrl()); // NUEVO
+        entity.setPhoneNumber(user.getPhoneNumber());
+        entity.setProfilePictureUrl(user.getProfilePictureUrl());
         entity.setActive(user.isActive());
 
         if (user.getRoles() != null) {
@@ -59,8 +59,8 @@ public class UserMapper {
         user.setCedula(entity.getCedula());
         user.setEdad(entity.getEdad());
         user.setPassword(entity.getPassword());
-        user.setPhoneNumber(entity.getPhoneNumber()); // NUEVO
-        user.setProfilePictureUrl(entity.getProfilePictureUrl()); // NUEVO
+        user.setPhoneNumber(entity.getPhoneNumber());
+        user.setProfilePictureUrl(entity.getProfilePictureUrl());
         user.setActive(entity.isActive());
 
         if (entity.getRoles() != null) {

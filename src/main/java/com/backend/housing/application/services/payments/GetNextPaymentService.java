@@ -49,7 +49,7 @@ public class GetNextPaymentService implements GetNextPaymentUseCase {
                 .map(p -> p.getTitle())
                 .orElse("Propiedad no especificada");
 
-        // Manejar estado PAID_NOT_STARTED (pagó pero aún no empieza)
+        // (pago pero aun no empieza)
         if (contract.getStatus() == ContractStatus.PAID_NOT_STARTED) {
             LocalDate startDate = contract.getPeriod().getStartDate();
             long daysUntilStart = ChronoUnit.DAYS.between(LocalDate.now(), startDate);

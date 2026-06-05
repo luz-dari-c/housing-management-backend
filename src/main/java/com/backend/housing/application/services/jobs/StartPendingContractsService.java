@@ -27,7 +27,6 @@ public class StartPendingContractsService implements StartPendingContractsUseCas
     public void execute() {
         LocalDate today = LocalDate.now();
 
-        // Buscar contratos en estado PAID_NOT_STARTED cuya fecha de inicio ya llegó
         List<RentalContract> pendingContracts = contractRepository.findByStatusAndStartDateBeforeOrEqual(
                 ContractStatus.PAID_NOT_STARTED, today);
 

@@ -1,6 +1,5 @@
 package com.backend.housing.infrastructure.config;
 
-
 import java.util.Set;
 
 import com.backend.housing.domain.entity.users.Rol;
@@ -10,7 +9,6 @@ import com.backend.housing.domain.ports.out.users.UserRepositoryPort;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
 
 
 @Component
@@ -31,16 +29,11 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         System.out.println("===== INITIALIZING ROLES =====");
-
-
         createRoleIfNotFound("USER");
         createRoleIfNotFound("OWNER");
         createRoleIfNotFound("TENANT");
         createRoleIfNotFound("BUYER");
-
         System.out.println("===== ROLES INITIALIZED =====");
-
-
         createTestUserIfNotFound();
     }
 
